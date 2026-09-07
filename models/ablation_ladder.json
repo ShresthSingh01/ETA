@@ -1,0 +1,42 @@
+{
+  "M0 - Baseline (23 features, static network only)": {
+    "features_count": 23,
+    "val_MAE": 6.213,
+    "val_RMSE": 21.081,
+    "test_MAE": 6.247,
+    "test_RMSE": 23.521,
+    "test_Within_5m_pct": 71.79,
+    "test_Within_15m_pct": 90.9,
+    "improvement_over_M0_pct": 0.0
+  },
+  "M1 - M0 + Basic Downstream State (27 features)": {
+    "features_count": 27,
+    "val_MAE": 6.204,
+    "val_RMSE": 20.988,
+    "test_MAE": 6.237,
+    "test_RMSE": 23.456,
+    "test_Within_5m_pct": 71.83,
+    "test_Within_15m_pct": 90.87,
+    "improvement_over_M0_pct": 0.16
+  },
+  "M2 - M1 + Multi-hop Spatial & Downstream Trend (31 features)": {
+    "features_count": 31,
+    "val_MAE": 6.216,
+    "val_RMSE": 21.097,
+    "test_MAE": 6.249,
+    "test_RMSE": 23.55,
+    "test_Within_5m_pct": 71.72,
+    "test_Within_15m_pct": 90.84,
+    "improvement_over_M0_pct": -0.03
+  },
+  "M3 - Full RSTGCN-inspired Spatial-Temporal Model (34 features)": {
+    "features_count": 34,
+    "val_MAE": 6.215,
+    "val_RMSE": 21.09,
+    "test_MAE": 6.251,
+    "test_RMSE": 23.532,
+    "test_Within_5m_pct": 71.85,
+    "test_Within_15m_pct": 90.86,
+    "improvement_over_M0_pct": -0.06
+  }
+}

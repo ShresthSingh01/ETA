@@ -1,0 +1,146 @@
+{
+  "Validation - Baseline 1 (Schedule Naive)": {
+    "MAE": 8.512,
+    "RMSE": 23.137,
+    "R2": 0.7499,
+    "Pct_within_5m": 62.49,
+    "Pct_within_10m": 77.56,
+    "Pct_within_15m": 85.34,
+    "P90_error": 21.0
+  },
+  "Validation - Baseline 2 (Historical Median)": {
+    "MAE": 8.337,
+    "RMSE": 23.119,
+    "R2": 0.7503,
+    "Pct_within_5m": 62.97,
+    "Pct_within_10m": 78.65,
+    "Pct_within_15m": 86.51,
+    "P90_error": 19.0
+  },
+  "Validation - Baseline 3 (Linear Ridge)": {
+    "MAE": 9.001,
+    "RMSE": 22.705,
+    "R2": 0.7591,
+    "Pct_within_5m": 55.68,
+    "Pct_within_10m": 77.36,
+    "Pct_within_15m": 86.04,
+    "P90_error": 19.07
+  },
+  "Validation - Model M0 (Baseline 23 feats)": {
+    "MAE": 6.213,
+    "RMSE": 21.081,
+    "R2": 0.7924,
+    "Pct_within_5m": 72.4,
+    "Pct_within_10m": 85.42,
+    "Pct_within_15m": 90.9,
+    "P90_error": 13.96
+  },
+  "Validation - Model M1 (Basic Downstream)": {
+    "MAE": 6.204,
+    "RMSE": 20.988,
+    "R2": 0.7942,
+    "Pct_within_5m": 72.47,
+    "Pct_within_10m": 85.36,
+    "Pct_within_15m": 90.89,
+    "P90_error": 13.98
+  },
+  "Validation - Model M2 (Multi-hop + Trend)": {
+    "MAE": 6.216,
+    "RMSE": 21.097,
+    "R2": 0.792,
+    "Pct_within_5m": 72.39,
+    "Pct_within_10m": 85.36,
+    "Pct_within_15m": 90.82,
+    "P90_error": 14.02
+  },
+  "Validation - Model M3 (Full RSTGCN)": {
+    "MAE": 6.215,
+    "RMSE": 21.09,
+    "R2": 0.7922,
+    "Pct_within_5m": 72.48,
+    "Pct_within_10m": 85.41,
+    "Pct_within_15m": 90.9,
+    "P90_error": 13.95
+  },
+  "Test Set - Baseline 1 (Schedule Naive)": {
+    "MAE": 8.6,
+    "RMSE": 25.636,
+    "R2": 0.7091,
+    "Pct_within_5m": 62.06,
+    "Pct_within_10m": 77.21,
+    "Pct_within_15m": 85.1,
+    "P90_error": 21.0
+  },
+  "Test Set - Baseline 2 (Historical Median)": {
+    "MAE": 8.419,
+    "RMSE": 25.956,
+    "R2": 0.7018,
+    "Pct_within_5m": 62.34,
+    "Pct_within_10m": 78.31,
+    "Pct_within_15m": 86.26,
+    "P90_error": 19.5
+  },
+  "Test Set - Model M0 (Baseline 23 feats)": {
+    "MAE": 6.247,
+    "RMSE": 23.521,
+    "R2": 0.7551,
+    "Pct_within_5m": 71.79,
+    "Pct_within_10m": 85.29,
+    "Pct_within_15m": 90.9,
+    "P90_error": 13.96
+  },
+  "Test Set - Model M1 (Basic Downstream)": {
+    "MAE": 6.237,
+    "RMSE": 23.456,
+    "R2": 0.7565,
+    "Pct_within_5m": 71.83,
+    "Pct_within_10m": 85.24,
+    "Pct_within_15m": 90.87,
+    "P90_error": 13.95
+  },
+  "Test Set - Model M2 (Multi-hop + Trend)": {
+    "MAE": 6.249,
+    "RMSE": 23.55,
+    "R2": 0.7545,
+    "Pct_within_5m": 71.72,
+    "Pct_within_10m": 85.21,
+    "Pct_within_15m": 90.84,
+    "P90_error": 13.99
+  },
+  "Test Set - Model M3 (Full RSTGCN)": {
+    "MAE": 6.251,
+    "RMSE": 23.532,
+    "R2": 0.7549,
+    "Pct_within_5m": 71.85,
+    "Pct_within_10m": 85.3,
+    "Pct_within_15m": 90.86,
+    "P90_error": 13.94
+  },
+  "Test Set - M3 + Rule Engine": {
+    "MAE": 6.913,
+    "RMSE": 23.888,
+    "R2": 0.7474,
+    "Pct_within_5m": 68.18,
+    "Pct_within_10m": 82.63,
+    "Pct_within_15m": 89.08,
+    "P90_error": 16.02
+  },
+  "Validation - Main LightGBM": {
+    "MAE": 6.215,
+    "RMSE": 21.09,
+    "R2": 0.7922,
+    "Pct_within_5m": 72.48,
+    "Pct_within_10m": 85.41,
+    "Pct_within_15m": 90.9,
+    "P90_error": 13.95
+  },
+  "Test Set - Main LightGBM": {
+    "MAE": 6.251,
+    "RMSE": 23.532,
+    "R2": 0.7549,
+    "Pct_within_5m": 71.85,
+    "Pct_within_10m": 85.3,
+    "Pct_within_15m": 90.86,
+    "P90_error": 13.94
+  }
+}

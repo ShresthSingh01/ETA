@@ -1,0 +1,25 @@
+# Auto detect text files and perform LF normalization on checkout
+* text=auto
+
+# Explicitly declare text files you want to always be normalized and converted to native line endings on checkout
+*.py text eol=lf
+*.json text eol=lf
+*.csv text eol=lf
+*.md text eol=lf
+*.html text eol=lf
+*.css text eol=lf
+*.js text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+Dockerfile text eol=lf
+.gitignore text eol=lf
+.env.example text eol=lf
+
+# Explicitly declare binary files (never normalize line endings)
+*.parquet binary
+*.npz binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ico binary

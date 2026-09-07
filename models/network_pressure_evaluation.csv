@@ -1,0 +1,5 @@
+pressure_bucket,sample_count,Baseline_MAE,Median_MAE,M0_Baseline_MAE,M3_Network_MAE,mae_improvement_pct
+Normal (<5m),73887,7.227,7.01,5.008,5.013,-0.1
+Low (5-15m),35801,8.492,8.377,6.184,6.183,0.02
+Medium (15-30m),24408,9.713,9.571,7.256,7.248,0.11
+High (>=30m),30468,11.164,10.96,8.521,8.534,-0.15

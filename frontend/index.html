@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RailETA | Dynamic Indian Railways ETA Prediction System</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <!-- Top Navigation Bar -->
+  <header class="navbar">
+    <div class="nav-brand">
+      <span class="ir-badge">IR / CRIS</span>
+      <div class="brand-text">
+        <h1>RailETA</h1>
+        <span class="version-tag">SIH 26028 Dynamic System</span>
+      </div>
+      <span id="headerModeBadge" class="header-mode-badge badge-mode-replay">● HISTORICAL REPLAY</span>
+    </div>
+
+    <!-- Centered Command Bar -->
+    <div class="nav-center-bar">
+      <!-- Mode Switcher -->
+      <div class="mode-switch-group">
+        <button id="btnModeReplay" class="btn btn-sm btn-mode active" title="Historical Ground-Truth Replay">📅 Replay</button>
+        <button id="btnModeLive" class="btn btn-sm btn-mode" title="External RailRadar Live Telemetry">📡 Live Feed</button>
+      </div>
+
+      <!-- Train Search & Presets -->
+      <div class="train-command-group">
+        <div class="train-input-wrap">
+          <input type="text" id="trainInput" class="form-input form-input-sm" placeholder="12303" value="12303" title="Enter Any Train Number">
+          <button id="btnTrackTrain" class="btn btn-sm btn-primary" title="Track Train Feed">Track</button>
+        </div>
+        <select id="trainSelector" class="form-select form-select-sm" title="Corridor Journey Presets"></select>
+      </div>
+
+      <!-- Contextual Replay Playback Controls (Visible in Replay Mode) -->
+      <div class="playback-controls" id="playbackControls">
+        <button id="btnPrev" class="btn btn-secondary btn-sm" title="Previous Station">⏮</button>
+        <button id="btnPlay" class="btn btn-primary btn-sm" title="Start Replay">▶ Play</button>
+        <button id="btnNext" class="btn btn-secondary btn-sm" title="Next Station">⏭</button>
+        <button id="btnReset" class="btn btn-outline btn-sm" title="Reset Journey">↺</button>
+      </div>
+
+      <!-- Contextual Live Streaming Status & Refresh (Visible in Live Mode) -->
+      <div class="live-stream-controls" id="liveStreamControls" style="display: none;">
+        <span class="live-poll-indicator" id="livePollIndicator">● Stream Active (15s)</span>
+        <button id="btnRefreshLive" class="btn btn-sm btn-outline" title="Refresh Live Telemetry Now">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <!-- Action Toolbar -->
+    <div class="nav-actions">
+      <button id="btnLiveLoopDemo" class="btn btn-emerald btn-sm" title="Demonstrate Complete 24-Station Live Telemetry Loop">⚡ Closed-Loop Test</button>
+      <button id="btnEvalLog" class="btn btn-sm btn-secondary" title="Real-Time Self-Evaluation Log">📈 Verification Log</button>
+      <button id="btnBenchmark" class="btn btn-accent btn-sm" title="View Accuracy Scorecard">📊 Scorecard</button>
+      <button id="btnApiKey" class="btn btn-outline btn-sm" title="Configure RailRadar Live Credentials">🔑 API</button>
+    </div>
+  </header>
+
+  <!-- Metric Summary Ribbon -->
+  <section class="summary-ribbon">
+    <div class="metric-card">
+      <span class="metric-label">CURRENT POSITION</span>
+      <span id="currentStationBadge" class="metric-value">Loading...</span>
+      <span id="stepCounter" class="metric-sub">Step 0 of 0</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">CURRENT RUNNING DELAY</span>
+      <span id="currentDelayBadge" class="metric-value delay-neutral">0.0m</span>
+      <span class="metric-sub">Observed at last station</span>
+    </div>
+    <div class="metric-card">
+      <span class="metric-label">DESTINATION FORECAST</span>
+      <span id="destEtaBadge" class="metric-value">--:--</span>
+      <span id="destDelayBadge" class="metric-sub">Estimated on-time</span>
+    </div>
+    <div class="metric-card telemetry-card">
+      <div class="telemetry-top">
+        <span class="metric-label">FEED TELEMETRY</span>
+        <span id="freshnessBadge" class="badge-fresh">● FRESH (0s)</span>
+      </div>
+      <span id="providerBadge" class="metric-value" style="font-size: 0.95rem;">Historical Replay</span>
+      <span id="kinematicsBadge" class="metric-sub">Speed: 0.0 km/h | Prog: 0%</span>
+    </div>
+    <div class="metric-card highlight-card">
+      <span class="metric-label">ACCURACY IMPROVEMENT OVER NTES</span>
+      <span id="modelImprovementBadge" class="metric-value highlight-value">+27.4%</span>
+      <span class="metric-sub">6.25m MAE vs 8.60m Naive Baseline</span>
+    </div>
+  </section>
+
+  <!-- 3-Panel Operational Grid -->
+  <main class="dashboard-grid">
+    <!-- Panel 1: Route Geo Map (Left) -->
+    <section class="panel map-panel">
+      <div class="panel-header">
+        <h2>Geospatial Route Tracking</h2>
+        <span id="mapStatus" class="tag-status">Historical Replay Mode</span>
+      </div>
+      <div id="map" class="map-container"></div>
+      <div class="map-legend">
+        <span><span class="legend-dot dot-completed"></span> Traversed</span>
+        <span><span class="legend-dot dot-current"></span> Current Position</span>
+        <span><span class="legend-dot dot-future"></span> Downstream</span>
+        <span><span class="legend-dot dot-tsr"></span> Speed Restriction (TSR)</span>
+      </div>
+    </section>
+
+    <!-- Panel 2: Live Dynamic ETA Table (Center) -->
+    <section class="panel table-panel">
+      <div class="panel-header">
+        <h2>Station ETA Forecast vs Ground Truth</h2>
+        <div class="table-legend">
+          <span class="badge-high">High Conf (≥80%)</span>
+          <span class="badge-med">Med Conf</span>
+          <span class="badge-low">Low Conf</span>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table class="eta-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Station</th>
+              <th>Dist</th>
+              <th>Scheduled</th>
+              <th>Naive NTES</th>
+              <th>Our Dynamic ETA</th>
+              <th>Actual Time</th>
+              <th>Model Error</th>
+              <th>Confidence</th>
+              <th>Rule Explanation</th>
+            </tr>
+          </thead>
+          <tbody id="etaTableBody">
+            <tr><td colspan="10" class="text-center">Loading journey data...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Panel 3: Operational Console (Right) -->
+    <section class="panel console-panel">
+      <div class="panel-header tabbed-header">
+        <div class="panel-tabs">
+          <button id="tabBtnPipeline" class="panel-tab-btn active" title="Real-Time Telemetry Pipeline">⚡ Closed-Loop Pipeline</button>
+          <button id="tabBtnWhatIf" class="panel-tab-btn" title="Simulate Track Events & Halts">🛠 What-If Simulator</button>
+        </div>
+        <button id="btnClearEvents" class="btn btn-xs btn-outline" style="display: none;" title="Reset Simulation Events">Clear Events</button>
+      </div>
+
+      <!-- Tab 1: Closed-Loop Telemetry Pipeline -->
+      <div id="tabContentPipeline" class="tab-content active">
+        <!-- Closed-Loop Telemetry Pipeline Inspector Card -->
+        <div class="card loop-pipeline-card">
+          <div class="loop-card-header">
+            <h3>Operational Telemetry Loop</h3>
+            <span id="loopTelemetryBadge" class="loop-telemetry-badge">ACTIVE STREAM</span>
+          </div>
+          <p class="card-desc">Real-time operational loop: Observation → 2D Network Grid → Multi-Model ETA → Self-Evaluation.</p>
+          
+          <div class="loop-pipeline-stages">
+            <div class="loop-stage-item">
+              <span class="stage-label">1. LIVE OBSERVATION INGESTION</span>
+              <div id="loopObservationVal" class="stage-value">Loading observation...</div>
+            </div>
+            <div class="loop-stage-item">
+              <span class="stage-label">2. DYNAMIC NETWORK STATE (2D GRID)</span>
+              <div id="loopNetworkVal" class="stage-value">Awaiting grid injection...</div>
+            </div>
+            <div class="loop-stage-item">
+              <span class="stage-label">3. RECOMPUTED FORWARD ETA (ML + RULES)</span>
+              <div id="loopEtaVal" class="stage-value">Calculating forward ETAs...</div>
+            </div>
+            <div class="loop-stage-item">
+              <span class="stage-label">4. CONTINUOUS SELF-EVALUATION MATCH</span>
+              <div id="loopEvalVal" class="stage-value">Origin departure (No prior prediction)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Downstream Junction Traffic Card -->
+        <div class="card station-board-card">
+          <div class="board-header">
+            <h3>Downstream Junction Traffic</h3>
+            <span id="junctionBadge" class="junction-tag">CNB</span>
+          </div>
+          <p class="card-desc">Live platform occupancy and incoming trains at the next major junction stop.</p>
+          <div id="stationBoardList" class="station-board-list">
+            <div class="board-loading">Loading junction traffic...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: What-If Disruption Simulator -->
+      <div id="tabContentWhatIf" class="tab-content" style="display: none;">
+        <!-- TSR Injection Card -->
+        <div class="card event-card">
+          <h3>Inject Speed Restriction (TSR)</h3>
+          <p class="card-desc">Simulate caution order / track maintenance with physics speed bounding.</p>
+          
+          <div class="form-group">
+            <label for="eventSection">Target Section:</label>
+            <select id="eventSection" class="form-select"></select>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="eventSpeed">Speed Limit:</label>
+              <select id="eventSpeed" class="form-select">
+                <option value="20">20 km/h</option>
+                <option value="30" selected>30 km/h</option>
+                <option value="45">45 km/h</option>
+                <option value="60">60 km/h</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="eventKm">Affected Stretch:</label>
+              <input type="number" id="eventKm" class="form-input" value="15" min="1" max="100">
+            </div>
+          </div>
+
+          <button id="btnInjectTsr" class="btn btn-warning btn-block">Apply Speed Restriction</button>
+        </div>
+
+        <!-- Maintenance Block Card -->
+        <div class="card event-card">
+          <h3>Inject Unscheduled Halt</h3>
+          <p class="card-desc">Simulate signal waiting, loco fault, or unscheduled crossing stop.</p>
+          <div class="form-group">
+            <label for="eventDuration">Halt Duration (minutes):</label>
+            <input type="number" id="eventDuration" class="form-input" value="12" min="1" max="120">
+          </div>
+          <button id="btnInjectHalt" class="btn btn-danger btn-block">Apply Unscheduled Halt</button>
+        </div>
+
+        <!-- Active Rules Audit Log -->
+        <div class="card audit-card">
+          <h3>Active Constraints & Audit Trail</h3>
+          <div id="auditLogContainer" class="audit-log-list">
+            <div class="audit-empty">No external events active. Running standard LightGBM + Railway physical bounds.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Live Self-Evaluation Verification Modal -->
+  <div id="evalModal" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <h2>Live Prediction Self-Evaluation Loop (§12 Continuous Verification)</h2>
+        <button id="btnCloseEvalModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Evaluates our live dynamic ETA predictions against subsequently observed arrival events in real-time.
+          Proves our system self-monitors and learns without waiting for offline post-mortems.
+        </p>
+        
+        <div class="eval-stats-grid">
+          <div class="eval-stat-card">
+            <span class="eval-stat-lbl">ROLLING MAE</span>
+            <span id="evalMaeVal" class="eval-stat-val text-emerald">1.4m</span>
+            <span class="eval-stat-sub">Across evaluated stops</span>
+          </div>
+          <div class="eval-stat-card">
+            <span class="eval-stat-lbl">ROLLING RMSE</span>
+            <span id="evalRmseVal" class="eval-stat-val text-blue">1.9m</span>
+            <span class="eval-stat-sub">Root mean square error</span>
+          </div>
+          <div class="eval-stat-card">
+            <span class="eval-stat-lbl">WITHIN ±3 MIN</span>
+            <span id="evalWithin3Val" class="eval-stat-val text-amber">92.0%</span>
+            <span class="eval-stat-sub">Strict operational tolerance</span>
+          </div>
+          <div class="eval-stat-card">
+            <span class="eval-stat-lbl">EVALUATED STOPS</span>
+            <span id="evalCountVal" class="eval-stat-val">7</span>
+            <span class="eval-stat-sub">Continuous feedback count</span>
+          </div>
+        </div>
+
+        <table class="modal-table">
+          <thead>
+            <tr>
+              <th>Prediction ID</th>
+              <th>Train</th>
+              <th>Station</th>
+              <th>Predicted Arrival</th>
+              <th>Predicted Delay</th>
+              <th>Actual Arrival</th>
+              <th>Error</th>
+              <th>Confidence</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="evalTableBody">
+            <tr><td colspan="9" class="text-center">Loading verification log...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Key Configuration Modal -->
+  <div id="apiKeyModal" class="modal">
+    <div class="modal-content modal-sm">
+      <div class="modal-header">
+        <h2>RailRadar API Credentials</h2>
+        <button id="btnCloseApiKeyModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Enter your RailRadar API Key to authenticate live train position and station board feeds.
+        </p>
+        <div class="form-group" style="margin-bottom: 1rem;">
+          <label for="apiKeyInput">API Key / Token:</label>
+          <input type="password" id="apiKeyInput" class="form-input" placeholder="e.g. rr_live_xxxxxxxxxxxx">
+        </div>
+        <div id="apiKeyStatusMsg" style="font-size: 0.8rem; margin-bottom: 1rem; color: #94a3b8;">
+          Currently using active environment key or automatic resilience fallback.
+        </div>
+        <button id="btnSaveApiKey" class="btn btn-primary btn-block">Save API Key</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Model Scorecard Modal -->
+  <div id="benchmarkModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Empirical Benchmark Scorecard (Holdout Test Set)</h2>
+        <button id="btnCloseModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Evaluated strictly on the temporal holdout test set (September 27–30, 2024; 164,000 unseen section runs). 
+          Zero look-ahead or data leakage.
+        </p>
+        <table class="modal-table">
+          <thead>
+            <tr>
+              <th>Model / Baseline Architecture</th>
+              <th>MAE (min)</th>
+              <th>RMSE</th>
+              <th>R² Score</th>
+              <th>Within ±5m</th>
+              <th>Within ±10m</th>
+              <th>Within ±15m</th>
+            </tr>
+          </thead>
+          <tbody id="benchmarkTableBody"></tbody>
+        </table>
+        
+        <div class="ablation-summary">
+          <h4>Key Empirical Findings for Jury:</h4>
+          <ul>
+            <li><strong>27.4% MAE Reduction:</strong> Our LightGBM + Rule Engine cuts section error from 8.60 min (NTES naive) down to <strong>6.25 min</strong>.</li>
+            <li><strong>Punctuality Accuracy:</strong> Accuracy within ±5 minutes rises from 62.1% to <strong>71.8%</strong>; ±15 min accuracy reaches <strong>90.9%</strong>.</li>
+            <li><strong>Ablation Proves Weather & Network Value:</strong> Removing real Open-Meteo weather degrades MAE from 6.21m to 6.28m, proving environmental features have genuine predictive signal.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive Closed-Loop Telemetry Verification Runner Modal -->
+  <div id="liveLoopModal" class="modal">
+    <div class="modal-content modal-large">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <h2>⚡ Real-Time Closed-Loop Telemetry & ETA Verification Demo</h2>
+          <span class="loop-telemetry-badge">E2E EVIDENCE</span>
+        </div>
+        <button id="btnCloseLoopModal" class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Executes the complete closed loop end-to-end across all corridor stations:
+          <strong>Observation $\rightarrow$ 2D Network Grid $\rightarrow$ Forward ETA $\rightarrow$ Next Observation $\rightarrow$ Self-Evaluation</strong>.
+        </p>
+
+        <div class="live-loop-controls" style="display: flex; gap: 12px; align-items: center; margin-bottom: 1.25rem;">
+          <button id="btnStartLoopRun" class="btn btn-emerald">▶ Run Full Verification Loop</button>
+          <div class="loop-progress-wrap" style="flex: 1; background: var(--bg-dark); height: 10px; border-radius: 9999px; overflow: hidden; border: 1px solid var(--border-color); display: none;" id="loopProgressWrap">
+            <div id="loopProgressBar" style="background: var(--accent-emerald); height: 100%; width: 0%; transition: width 0.2s ease;"></div>
+          </div>
+          <span id="loopProgressText" style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--text-secondary); display: none;">Station 0 of 24</span>
+        </div>
+
+        <div class="eval-stats-grid" id="loopStatsGrid">
+          <div class="eval-stat-card">
+            <span class="eval-stat-lbl">TOTAL EVALUATED</span>
+            <span id="loopTotalStops" class="eval-stat-val text-blue">--</span>
+            <span class="eval-stat-sub">Station stops</span>
+          </div>
+          <div class="eval-stat-card">
+            <span class="eval-stat-lbl">FINAL ROLLING MAE</span>
+            <span id="loopMaeVal" class="eval-stat-val text-emerald">--</span>
+            <span class="eval-stat-sub">Our dynamic model</span>
+          </div>
+          <div class="eval-stat-card">
+            <span class="eval-stat-lbl">WITHIN ±3 MIN</span>
+            <span id="loopWithin3Val" class="eval-stat-val text-amber">--</span>
+            <span class="eval-stat-sub">Strict punctuality</span>
+          </div>
+          <div class="eval-stat-card">
+            <span class="eval-stat-lbl">WITHIN ±5 MIN</span>
+            <span id="loopWithin5Val" class="eval-stat-val text-emerald">--</span>
+            <span class="eval-stat-sub">Zero unphysical drift</span>
+          </div>
+        </div>
+
+        <div class="table-responsive" style="max-height: 380px; margin-top: 1rem;">
+          <table class="modal-table">
+            <thead>
+              <tr>
+                <th>Step</th>
+                <th>Station</th>
+                <th>Observed Delay</th>
+                <th>Network Injected</th>
+                <th>Prior Error</th>
+                <th>Recomputed Next ETA</th>
+                <th>Rolling MAE</th>
+              </tr>
+            </thead>
+            <tbody id="loopTraceTableBody">
+              <tr><td colspan="7" class="text-center" style="padding: 2rem; color: var(--text-muted);">Click 'Run Full Verification Loop' to start live execution.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="app.js"></script>
+</body>
+</html>

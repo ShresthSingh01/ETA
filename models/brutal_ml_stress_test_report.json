@@ -1,0 +1,437 @@
+{
+  "test_1_sliced_subgroups": {
+    "by_delay_severity": {
+      "On-time (<5m)": {
+        "MAE": 5.426,
+        "RMSE": 31.217,
+        "R2": 0.6552,
+        "Pct_within_5m": 80.72,
+        "Pct_within_10m": 89.99,
+        "Pct_within_15m": 93.61,
+        "P90_error": 10.01,
+        "mean_bias_error": -3.376
+      },
+      "Minor delay (5-30m)": {
+        "MAE": 5.153,
+        "RMSE": 10.007,
+        "R2": 0.9312,
+        "Pct_within_5m": 70.02,
+        "Pct_within_10m": 86.25,
+        "Pct_within_15m": 92.59,
+        "P90_error": 12.49,
+        "mean_bias_error": -1.56
+      },
+      "Severe delay (30-120m)": {
+        "MAE": 7.64,
+        "RMSE": 15.207,
+        "R2": 0.8605,
+        "Pct_within_5m": 61.24,
+        "Pct_within_10m": 78.42,
+        "Pct_within_15m": 86.22,
+        "P90_error": 19.18,
+        "mean_bias_error": -1.558
+      },
+      "Catastrophic delay (>120m)": {
+        "MAE": 14.798,
+        "RMSE": 30.879,
+        "R2": 0.763,
+        "Pct_within_5m": 45.74,
+        "Pct_within_10m": 64.56,
+        "Pct_within_15m": 74.47,
+        "P90_error": 37.34,
+        "mean_bias_error": -3.337
+      }
+    },
+    "by_distance": {
+      "Micro/Throat (<15km)": {
+        "MAE": 4.167,
+        "RMSE": 15.598,
+        "R2": 0.371,
+        "Pct_within_5m": 82.23,
+        "Pct_within_10m": 90.96,
+        "Pct_within_15m": 94.48,
+        "P90_error": 9.09,
+        "mean_bias_error": -1.711
+      },
+      "Short (15-35km)": {
+        "MAE": 4.95,
+        "RMSE": 21.074,
+        "R2": 0.2869,
+        "Pct_within_5m": 75.65,
+        "Pct_within_10m": 88.54,
+        "Pct_within_15m": 93.3,
+        "P90_error": 11.21,
+        "mean_bias_error": -2.017
+      },
+      "Medium (35-65km)": {
+        "MAE": 6.943,
+        "RMSE": 26.136,
+        "R2": 0.3243,
+        "Pct_within_5m": 65.0,
+        "Pct_within_10m": 82.7,
+        "Pct_within_15m": 89.83,
+        "P90_error": 15.16,
+        "mean_bias_error": -2.784
+      },
+      "Long (>65km)": {
+        "MAE": 12.467,
+        "RMSE": 35.441,
+        "R2": 0.744,
+        "Pct_within_5m": 51.11,
+        "Pct_within_10m": 69.92,
+        "Pct_within_15m": 79.64,
+        "P90_error": 27.74,
+        "mean_bias_error": -4.484
+      }
+    },
+    "by_diurnal_period": {
+      "Night/Dawn (22-06)": {
+        "MAE": 5.802,
+        "RMSE": 20.466,
+        "R2": 0.8126,
+        "Pct_within_5m": 73.04,
+        "Pct_within_10m": 85.78,
+        "Pct_within_15m": 91.25,
+        "P90_error": 13.55,
+        "mean_bias_error": -2.226
+      },
+      "Morning Peak (07-11)": {
+        "MAE": 5.841,
+        "RMSE": 24.772,
+        "R2": 0.7097,
+        "Pct_within_5m": 73.61,
+        "Pct_within_10m": 86.75,
+        "Pct_within_15m": 91.95,
+        "P90_error": 12.59,
+        "mean_bias_error": -2.246
+      },
+      "Midday (12-16)": {
+        "MAE": 6.762,
+        "RMSE": 21.035,
+        "R2": 0.7838,
+        "Pct_within_5m": 69.94,
+        "Pct_within_10m": 84.06,
+        "Pct_within_15m": 89.79,
+        "P90_error": 15.27,
+        "mean_bias_error": -2.97
+      },
+      "Evening Peak (17-21)": {
+        "MAE": 6.488,
+        "RMSE": 27.059,
+        "R2": 0.6895,
+        "Pct_within_5m": 70.84,
+        "Pct_within_10m": 85.08,
+        "Pct_within_15m": 90.93,
+        "P90_error": 13.96,
+        "mean_bias_error": -2.652
+      },
+      "Late Night (22-24)": {
+        "MAE": 6.935,
+        "RMSE": 23.512,
+        "R2": 0.8009,
+        "Pct_within_5m": 69.75,
+        "Pct_within_10m": 83.1,
+        "Pct_within_15m": 89.28,
+        "P90_error": 15.91,
+        "mean_bias_error": -2.007
+      }
+    },
+    "by_weather": {
+      "Clear / Standard": {
+        "MAE": 6.248,
+        "RMSE": 23.537,
+        "R2": 0.7544,
+        "Pct_within_5m": 71.79,
+        "Pct_within_10m": 85.27,
+        "Pct_within_15m": 90.88,
+        "P90_error": 13.97,
+        "mean_bias_error": -2.451
+      },
+      "Heavy Rain (> 10mm/h)": {
+        "MAE": 6.219,
+        "RMSE": 22.409,
+        "R2": 0.7987,
+        "Pct_within_5m": 71.81,
+        "Pct_within_10m": 86.43,
+        "Pct_within_15m": 91.72,
+        "P90_error": 12.94,
+        "mean_bias_error": -2.437
+      }
+    }
+  },
+  "test_2_hop_horizon": {
+    "1 hop (Immediate Next)": {
+      "sample_count": 7784,
+      "LightGBM_MAE": 5.397,
+      "Schedule_Baseline_MAE": 7.914,
+      "Historical_Median_MAE": 6.504,
+      "ML_Error_Reduction_Pct": 31.8,
+      "LightGBM_Within_5m_Pct": 71.7,
+      "Schedule_Within_5m_Pct": 56.15
+    },
+    "2-3 hops": {
+      "sample_count": 15536,
+      "LightGBM_MAE": 6.112,
+      "Schedule_Baseline_MAE": 7.749,
+      "Historical_Median_MAE": 7.403,
+      "ML_Error_Reduction_Pct": 21.13,
+      "LightGBM_Within_5m_Pct": 68.43,
+      "Schedule_Within_5m_Pct": 61.15
+    },
+    "4-5 hops": {
+      "sample_count": 15103,
+      "LightGBM_MAE": 6.302,
+      "Schedule_Baseline_MAE": 8.247,
+      "Historical_Median_MAE": 7.977,
+      "ML_Error_Reduction_Pct": 23.58,
+      "LightGBM_Within_5m_Pct": 69.03,
+      "Schedule_Within_5m_Pct": 59.15
+    },
+    "6-10 hops": {
+      "sample_count": 34008,
+      "LightGBM_MAE": 6.779,
+      "Schedule_Baseline_MAE": 9.047,
+      "Historical_Median_MAE": 8.727,
+      "ML_Error_Reduction_Pct": 25.07,
+      "LightGBM_Within_5m_Pct": 70.05,
+      "Schedule_Within_5m_Pct": 60.22
+    },
+    "11+ hops (Long Horizon)": {
+      "sample_count": 92133,
+      "LightGBM_MAE": 6.137,
+      "Schedule_Baseline_MAE": 8.694,
+      "Historical_Median_MAE": 8.71,
+      "ML_Error_Reduction_Pct": 29.41,
+      "LightGBM_Within_5m_Pct": 73.46,
+      "Schedule_Within_5m_Pct": 63.87
+    }
+  },
+  "test_3_permutation_importance": [
+    {
+      "feature": "scheduled_section_time",
+      "delta_mae_min": 14.8844,
+      "pct_error_increase": 240.25,
+      "permuted_mae": 21.0798
+    },
+    {
+      "feature": "section_median_time",
+      "delta_mae_min": 9.0997,
+      "pct_error_increase": 146.88,
+      "permuted_mae": 15.2951
+    },
+    {
+      "feature": "section_mean_time",
+      "delta_mae_min": 2.9016,
+      "pct_error_increase": 46.83,
+      "permuted_mae": 9.097
+    },
+    {
+      "feature": "dep_delay_from",
+      "delta_mae_min": 1.6309,
+      "pct_error_increase": 26.32,
+      "permuted_mae": 7.8263
+    },
+    {
+      "feature": "distance_km",
+      "delta_mae_min": 0.924,
+      "pct_error_increase": 14.92,
+      "permuted_mae": 7.1194
+    },
+    {
+      "feature": "section_p90_time",
+      "delta_mae_min": 0.4206,
+      "pct_error_increase": 6.79,
+      "permuted_mae": 6.616
+    },
+    {
+      "feature": "section_min_time",
+      "delta_mae_min": 0.2049,
+      "pct_error_increase": 3.31,
+      "permuted_mae": 6.4003
+    },
+    {
+      "feature": "arr_delay_from",
+      "delta_mae_min": 0.1615,
+      "pct_error_increase": 2.61,
+      "permuted_mae": 6.3569
+    },
+    {
+      "feature": "section_std_time",
+      "delta_mae_min": 0.1123,
+      "pct_error_increase": 1.81,
+      "permuted_mae": 6.3077
+    },
+    {
+      "feature": "zone",
+      "delta_mae_min": 0.1037,
+      "pct_error_increase": 1.67,
+      "permuted_mae": 6.2991
+    },
+    {
+      "feature": "scheduled_dwell_from",
+      "delta_mae_min": 0.0826,
+      "pct_error_increase": 1.33,
+      "permuted_mae": 6.278
+    },
+    {
+      "feature": "hour_of_day",
+      "delta_mae_min": 0.0196,
+      "pct_error_increase": 0.32,
+      "permuted_mae": 6.215
+    },
+    {
+      "feature": "edge_ntrains",
+      "delta_mae_min": 0.0179,
+      "pct_error_increase": 0.29,
+      "permuted_mae": 6.2133
+    },
+    {
+      "feature": "temperature_2m",
+      "delta_mae_min": 0.0028,
+      "pct_error_increase": 0.05,
+      "permuted_mae": 6.1982
+    },
+    {
+      "feature": "wind_speed_10m",
+      "delta_mae_min": 0.0001,
+      "pct_error_increase": 0.0,
+      "permuted_mae": 6.1955
+    },
+    {
+      "feature": "day_of_week",
+      "delta_mae_min": 0.0,
+      "pct_error_increase": 0.0,
+      "permuted_mae": 6.1954
+    },
+    {
+      "feature": "is_weekend",
+      "delta_mae_min": -0.0,
+      "pct_error_increase": -0.0,
+      "permuted_mae": 6.1954
+    },
+    {
+      "feature": "day_of_month",
+      "delta_mae_min": 0.0,
+      "pct_error_increase": 0.0,
+      "permuted_mae": 6.1954
+    },
+    {
+      "feature": "precipitation",
+      "delta_mae_min": -0.0,
+      "pct_error_increase": -0.0,
+      "permuted_mae": 6.1953
+    },
+    {
+      "feature": "weather_code",
+      "delta_mae_min": 0.0,
+      "pct_error_increase": 0.0,
+      "permuted_mae": 6.1954
+    },
+    {
+      "feature": "visibility",
+      "delta_mae_min": 0.0,
+      "pct_error_increase": 0.0,
+      "permuted_mae": 6.1954
+    },
+    {
+      "feature": "is_foggy",
+      "delta_mae_min": 0.0,
+      "pct_error_increase": 0.0,
+      "permuted_mae": 6.1954
+    },
+    {
+      "feature": "is_heavy_rain",
+      "delta_mae_min": 0.0,
+      "pct_error_increase": 0.0,
+      "permuted_mae": 6.1954
+    }
+  ],
+  "test_4_physical_safety_audit": {
+    "total_evaluated_sections": 164564,
+    "raw_ml_mps_violations": 2940,
+    "raw_ml_mps_violation_pct": 1.787,
+    "max_raw_implied_speed_kmh": 7388.8,
+    "p99_raw_implied_speed_kmh": 240.9,
+    "excessive_recovery_violations": 21404,
+    "excessive_recovery_pct_of_delayed": 28.016,
+    "rule_engine_rectified_mps_violations": 131,
+    "rule_engine_safety_compliance_pct": 99.9,
+    "raw_ml_mae": 6.247,
+    "rule_enforced_mae": 6.908
+  },
+  "test_5_residuals_and_tail_risk": {
+    "mean_bias_error_mbe": -2.4512,
+    "mean_absolute_error_mae": 6.2475,
+    "root_mean_squared_error_rmse": 23.5215,
+    "heteroscedasticity_corr_with_time": 0.561,
+    "heteroscedasticity_corr_with_distance": 0.15,
+    "residual_skewness": -29.445,
+    "residual_excess_kurtosis": 1600.389,
+    "abs_error_percentiles": {
+      "P25": 0.456,
+      "P50_Median": 1.964,
+      "P75": 5.825,
+      "P90": 13.955,
+      "P95": 23.273,
+      "P99": 62.994,
+      "P99_9": 223.487,
+      "Max": 1888.222
+    }
+  },
+  "test_6_adversarial_stress_testing": {
+    "Base Nominal (Standard)": {
+      "predicted_section_time_min": 71.3,
+      "is_finite": true,
+      "is_non_negative": true,
+      "status": "PASS"
+    },
+    "Catastrophic Delay (+600 min)": {
+      "predicted_section_time_min": 76.81,
+      "is_finite": true,
+      "is_non_negative": true,
+      "status": "PASS"
+    },
+    "Negative Departure Delay (-60 min early)": {
+      "predicted_section_time_min": 71.3,
+      "is_finite": true,
+      "is_non_negative": true,
+      "status": "PASS"
+    },
+    "Micro-Section (0.5 km yard throat)": {
+      "predicted_section_time_min": 64.59,
+      "is_finite": true,
+      "is_non_negative": true,
+      "status": "PASS"
+    },
+    "Zero Distance Section (0.0 km)": {
+      "predicted_section_time_min": 64.59,
+      "is_finite": true,
+      "is_non_negative": true,
+      "status": "PASS"
+    },
+    "Monsoon Deluge (100mm rain, 0m visibility)": {
+      "predicted_section_time_min": 71.3,
+      "is_finite": true,
+      "is_non_negative": true,
+      "status": "PASS"
+    },
+    "Super-Saturated Density (50 trains on edge)": {
+      "predicted_section_time_min": 71.01,
+      "is_finite": true,
+      "is_non_negative": true,
+      "status": "PASS"
+    }
+  },
+  "test_7_latency_and_footprint": {
+    "benchmark_iterations": 5000,
+    "latency_p50_us": 1225.0,
+    "latency_p90_us": 1751.2,
+    "latency_p95_us": 1903.6,
+    "latency_p99_us": 2281.7,
+    "latency_max_us": 43766.1,
+    "batch_total_records": 164564,
+    "batch_total_duration_sec": 1.196,
+    "batch_throughput_predictions_per_sec": 137609.2,
+    "model_disk_size_kb": 5639.7
+  }
+}

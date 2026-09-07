@@ -1,0 +1,54 @@
+{
+  "Tier 1: Very High (>= 90%)": {
+    "sample_count": 134401,
+    "sample_pct": 81.67,
+    "mean_confidence_score": 94.4,
+    "mae_mins": 5.424,
+    "rmse_mins": 23.867,
+    "pct_within_3m": 63.8,
+    "pct_within_5m": 75.19,
+    "pct_within_10m": 87.8,
+    "pct_within_15m": 92.76,
+    "p90_error_mins": 11.83,
+    "empirical_reliability": "CALIBRATED (Monotonic Error Degradation)"
+  },
+  "Tier 2: High (80% - 90%)": {
+    "sample_count": 20105,
+    "sample_pct": 12.22,
+    "mean_confidence_score": 86.6,
+    "mae_mins": 7.776,
+    "rmse_mins": 16.677,
+    "pct_within_3m": 48.76,
+    "pct_within_5m": 61.43,
+    "pct_within_10m": 78.48,
+    "pct_within_15m": 86.27,
+    "p90_error_mins": 19.3,
+    "empirical_reliability": "CALIBRATED (Monotonic Error Degradation)"
+  },
+  "Tier 3: Moderate (70% - 80%)": {
+    "sample_count": 6816,
+    "sample_pct": 4.14,
+    "mean_confidence_score": 74.6,
+    "mae_mins": 13.155,
+    "rmse_mins": 27.09,
+    "pct_within_3m": 34.98,
+    "pct_within_5m": 47.89,
+    "pct_within_10m": 66.42,
+    "pct_within_15m": 76.54,
+    "p90_error_mins": 32.36,
+    "empirical_reliability": "CALIBRATED (Monotonic Error Degradation)"
+  },
+  "Tier 4: Reduced (60% - 70%)": {
+    "sample_count": 3242,
+    "sample_pct": 1.97,
+    "mean_confidence_score": 69.1,
+    "mae_mins": 16.376,
+    "rmse_mins": 34.667,
+    "pct_within_3m": 33.1,
+    "pct_within_5m": 45.56,
+    "pct_within_10m": 63.17,
+    "pct_within_15m": 72.67,
+    "p90_error_mins": 42.14,
+    "empirical_reliability": "CALIBRATED (Monotonic Error Degradation)"
+  }
+}

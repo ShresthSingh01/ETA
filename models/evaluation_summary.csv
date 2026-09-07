@@ -1,0 +1,17 @@
+,MAE,RMSE,R2,Pct_within_5m,Pct_within_10m,Pct_within_15m,P90_error
+Validation - Baseline 1 (Schedule Naive),8.512,23.137,0.7499,62.49,77.56,85.34,21.0
+Validation - Baseline 2 (Historical Median),8.337,23.119,0.7503,62.97,78.65,86.51,19.0
+Validation - Baseline 3 (Linear Ridge),9.001,22.705,0.7591,55.68,77.36,86.04,19.07
+Validation - Model M0 (Baseline 23 feats),6.213,21.081,0.7924,72.4,85.42,90.9,13.96
+Validation - Model M1 (Basic Downstream),6.204,20.988,0.7942,72.47,85.36,90.89,13.98
+Validation - Model M2 (Multi-hop + Trend),6.216,21.097,0.792,72.39,85.36,90.82,14.02
+Validation - Model M3 (Full RSTGCN),6.215,21.09,0.7922,72.48,85.41,90.9,13.95
+Test Set - Baseline 1 (Schedule Naive),8.6,25.636,0.7091,62.06,77.21,85.1,21.0
+Test Set - Baseline 2 (Historical Median),8.419,25.956,0.7018,62.34,78.31,86.26,19.5
+Test Set - Model M0 (Baseline 23 feats),6.247,23.521,0.7551,71.79,85.29,90.9,13.96
+Test Set - Model M1 (Basic Downstream),6.237,23.456,0.7565,71.83,85.24,90.87,13.95
+Test Set - Model M2 (Multi-hop + Trend),6.249,23.55,0.7545,71.72,85.21,90.84,13.99
+Test Set - Model M3 (Full RSTGCN),6.251,23.532,0.7549,71.85,85.3,90.86,13.94
+Test Set - M3 + Rule Engine,6.913,23.888,0.7474,68.18,82.63,89.08,16.02
+Validation - Main LightGBM,6.215,21.09,0.7922,72.48,85.41,90.9,13.95
+Test Set - Main LightGBM,6.251,23.532,0.7549,71.85,85.3,90.86,13.94

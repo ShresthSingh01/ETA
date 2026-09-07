@@ -1,0 +1,102 @@
+{
+  "L0_Schedule_Naive": {
+    "layer": "L0: Schedule-Naive Baseline",
+    "description": "Static scheduled timetable section running time",
+    "metrics": {
+      "MAE": 8.6,
+      "RMSE": 25.636,
+      "R2": 0.7091,
+      "Pct_within_5m": 62.06,
+      "Pct_within_10m": 77.21,
+      "Pct_within_15m": 85.1,
+      "P90_error": 21.0
+    },
+    "mae_reduction_vs_naive_pct": 0.0,
+    "compute_time_sec": 0.012
+  },
+  "L1_Historical_Median": {
+    "layer": "L1: Historical Median Baseline",
+    "description": "Historical median running time per track edge",
+    "metrics": {
+      "MAE": 8.419,
+      "RMSE": 25.956,
+      "R2": 0.7018,
+      "Pct_within_5m": 62.34,
+      "Pct_within_10m": 78.31,
+      "Pct_within_15m": 86.26,
+      "P90_error": 19.5
+    },
+    "mae_reduction_vs_naive_pct": 2.1,
+    "compute_time_sec": 0.009
+  },
+  "L2_Static_ML": {
+    "layer": "L2: Static LightGBM (No Delay Features)",
+    "description": "LightGBM model trained without dynamic station delay/dwell states",
+    "metrics": {
+      "MAE": 7.535,
+      "RMSE": 24.179,
+      "R2": 0.7413,
+      "Pct_within_5m": 63.58,
+      "Pct_within_10m": 80.52,
+      "Pct_within_15m": 88.14,
+      "P90_error": 16.9
+    },
+    "mae_reduction_vs_naive_pct": 12.38,
+    "compute_time_sec": 0.626
+  },
+  "L3_Full_Feature_ML": {
+    "layer": "L3: Full Feature LightGBM (Dynamic ML)",
+    "description": "LightGBM model with all 23 features including live departure delays",
+    "metrics": {
+      "MAE": 6.247,
+      "RMSE": 23.521,
+      "R2": 0.7551,
+      "Pct_within_5m": 71.79,
+      "Pct_within_10m": 85.29,
+      "Pct_within_15m": 90.9,
+      "P90_error": 13.96
+    },
+    "mae_reduction_vs_naive_pct": 27.36,
+    "compute_time_sec": 1.002
+  },
+  "L4_ML_Plus_Rules": {
+    "layer": "L4: LightGBM + Railway Rules (G&SR / WTT)",
+    "description": "Post-ML physical bounds: MPS floor, WTT recovery allowance, outlier ceiling",
+    "metrics": {
+      "MAE": 6.908,
+      "RMSE": 23.877,
+      "R2": 0.7477,
+      "Pct_within_5m": 68.14,
+      "Pct_within_10m": 82.65,
+      "Pct_within_15m": 89.11,
+      "P90_error": 16.0
+    },
+    "mae_reduction_vs_naive_pct": 19.67,
+    "compute_time_sec": 0.646
+  },
+  "L5_Kinematic_InFlight": {
+    "layer": "L5: In-Flight Kinematic State Correction",
+    "description": "Freshness-weighted fusion of live GPS speed + section progress on active sections",
+    "in_flight_samples_evaluated": 10000,
+    "pure_ml_remaining_metrics": {
+      "MAE": 3.748,
+      "RMSE": 11.308,
+      "R2": 0.7754,
+      "Pct_within_5m": 81.0,
+      "Pct_within_10m": 91.46,
+      "Pct_within_15m": 95.4,
+      "P90_error": 8.69
+    },
+    "kinematic_blended_remaining_metrics": {
+      "MAE": 2.75,
+      "RMSE": 9.361,
+      "R2": 0.846,
+      "Pct_within_5m": 86.63,
+      "Pct_within_10m": 94.81,
+      "Pct_within_15m": 97.57,
+      "P90_error": 6.23
+    },
+    "in_flight_mae_gain_pct": 26.63,
+    "compute_time_sec": 0.003
+  }
+}

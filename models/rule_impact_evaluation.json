@@ -1,0 +1,26 @@
+{
+  "total_samples": 164564,
+  "clamped_or_adjusted_count": 24505,
+  "mps_floor_clamps": 3091,
+  "outlier_ceiling_clamps": 1,
+  "recovery_cushion_clamps": 24189,
+  "clamped_pct": 14.89,
+  "raw_ml_metrics": {
+    "MAE": 6.251,
+    "RMSE": 23.532,
+    "R2": 0.7549,
+    "Pct_within_5m": 71.85,
+    "Pct_within_10m": 85.3,
+    "Pct_within_15m": 90.86,
+    "P90_error": 13.94
+  },
+  "rule_engine_metrics": {
+    "MAE": 6.913,
+    "RMSE": 23.888,
+    "R2": 0.7474,
+    "Pct_within_5m": 68.18,
+    "Pct_within_10m": 82.63,
+    "Pct_within_15m": 89.08,
+    "P90_error": 16.02
+  }
+}

@@ -1,0 +1,122 @@
+{
+  "On-time (<5m)": {
+    "sample_count": 72114,
+    "LightGBM": {
+      "MAE": 5.434,
+      "RMSE": 31.243,
+      "R2": 0.6546,
+      "Pct_within_5m": 80.84,
+      "Pct_within_10m": 89.99,
+      "Pct_within_15m": 93.58,
+      "P90_error": 10.01
+    },
+    "Baseline_Schedule_Naive": {
+      "MAE": 6.099,
+      "RMSE": 32.395,
+      "R2": 0.6286,
+      "Pct_within_5m": 79.7,
+      "Pct_within_10m": 87.78,
+      "Pct_within_15m": 91.93,
+      "P90_error": 13.0
+    },
+    "Baseline_Historical_Median": {
+      "MAE": 9.006,
+      "RMSE": 34.715,
+      "R2": 0.5736,
+      "Pct_within_5m": 63.52,
+      "Pct_within_10m": 79.03,
+      "Pct_within_15m": 86.58,
+      "P90_error": 19.5
+    }
+  },
+  "Minor delay (5-30m)": {
+    "sample_count": 53459,
+    "LightGBM": {
+      "MAE": 5.158,
+      "RMSE": 10.009,
+      "R2": 0.9312,
+      "Pct_within_5m": 70.06,
+      "Pct_within_10m": 86.23,
+      "Pct_within_15m": 92.58,
+      "P90_error": 12.42
+    },
+    "Baseline_Schedule_Naive": {
+      "MAE": 7.596,
+      "RMSE": 12.029,
+      "R2": 0.9006,
+      "Pct_within_5m": 52.83,
+      "Pct_within_10m": 75.82,
+      "Pct_within_15m": 87.16,
+      "P90_error": 17.0
+    },
+    "Baseline_Historical_Median": {
+      "MAE": 6.363,
+      "RMSE": 11.618,
+      "R2": 0.9072,
+      "Pct_within_5m": 65.13,
+      "Pct_within_10m": 81.8,
+      "Pct_within_15m": 89.58,
+      "P90_error": 16.0
+    }
+  },
+  "Severe delay (30-120m)": {
+    "sample_count": 30127,
+    "LightGBM": {
+      "MAE": 7.629,
+      "RMSE": 15.173,
+      "R2": 0.8612,
+      "Pct_within_5m": 61.31,
+      "Pct_within_10m": 78.5,
+      "Pct_within_15m": 86.15,
+      "P90_error": 19.25
+    },
+    "Baseline_Schedule_Naive": {
+      "MAE": 12.951,
+      "RMSE": 20.923,
+      "R2": 0.736,
+      "Pct_within_5m": 44.31,
+      "Pct_within_10m": 62.05,
+      "Pct_within_15m": 71.91,
+      "P90_error": 34.0
+    },
+    "Baseline_Historical_Median": {
+      "MAE": 8.565,
+      "RMSE": 16.174,
+      "R2": 0.8422,
+      "Pct_within_5m": 59.35,
+      "Pct_within_10m": 74.96,
+      "Pct_within_15m": 83.51,
+      "P90_error": 22.0
+    }
+  },
+  "Extreme delay (>120m)": {
+    "sample_count": 8864,
+    "LightGBM": {
+      "MAE": 14.8,
+      "RMSE": 30.869,
+      "R2": 0.7632,
+      "Pct_within_5m": 45.36,
+      "Pct_within_10m": 64.63,
+      "Pct_within_15m": 74.4,
+      "P90_error": 37.11
+    },
+    "Baseline_Schedule_Naive": {
+      "MAE": 20.21,
+      "RMSE": 36.096,
+      "R2": 0.6762,
+      "Pct_within_5m": 34.56,
+      "Pct_within_10m": 51.11,
+      "Pct_within_15m": 61.97,
+      "P90_error": 50.0
+    },
+    "Baseline_Historical_Median": {
+      "MAE": 15.54,
+      "RMSE": 31.624,
+      "R2": 0.7514,
+      "Pct_within_5m": 46.12,
+      "Pct_within_10m": 62.89,
+      "Pct_within_15m": 73.04,
+      "P90_error": 39.0
+    }
+  }
+}
