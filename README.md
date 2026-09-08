@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🚂 RailETA — Dynamic ETA Prediction for Indian Railways</h1>
+  <h1 align="center">🚂 GaTi — Dynamic ETA Prediction for Indian Railways</h1>
   <p align="center">
     <strong>Smart India Hackathon 2026 • Problem Statement 26028</strong><br/>
     <em>Dynamic Forecast of Expected Time of Arrival (ETA) for Coaching Trains</em>
@@ -65,14 +65,14 @@
 
 ## 💡 Executive Summary & Core Breakthrough
 
-RailETA is an enterprise-grade, hybrid **Machine Learning + Graph Physics + Railway Operating Rules** ETA forecasting engine built on **1,282,325 genuine Indian Railway movement records** and **97,920 hourly ERA5 reanalysis weather records** from September 2024.
+GaTi is an enterprise-grade, hybrid **Machine Learning + Graph Physics + Railway Operating Rules** ETA forecasting engine built on **1,282,325 genuine Indian Railway movement records** and **97,920 hourly ERA5 reanalysis weather records** from September 2024.
 
 It replaces static train density heuristics with an $O(1)$ **Downstream Network State Engine** (grounded in the spatial-temporal delay propagation principles of the RSTGCN research paper) and clamps all machine learning outputs through a 4-stage deterministic **Railway Constraint Engine** (strictly compliant with Indian Railways General & Subsidiary Rules).
 
 ### Operational Highlights:
 * **6.237 min Test MAE** (Model Tier M1) — **27.48% error reduction** over NTES schedule-naive baseline (**8.600 min MAE**).
 * **71.85% Punctuality within $\pm 5$ min** (Model Tier M3) across 164,564 unseen holdout test traversals.
-* **Tail-Risk Network Congestion Resilience**: Under high downstream delay conditions ($\ge 30$ min ahead), RailETA reduces MAE from 11.16 min (NTES schedule) to 8.53 min — a 23.6% improvement over the schedule baseline.
+* **Tail-Risk Network Congestion Resilience**: Under high downstream delay conditions ($\ge 30$ min ahead), GaTi reduces MAE from 11.16 min (NTES schedule) to 8.53 min — a 23.6% improvement over the schedule baseline.
 * **Deterministic Constraint Enforcement**: 21/21 railway constraint boundary tests verify strict compliance with IR G&SR Rule 4.08 (Maximum Permissible Speed running time floors).
 * **Extreme Scalability**: Pre-allocated vectorized 2D NumPy forward trajectory calculation achieves **508 train journeys/second** (6,096 sections/sec) with a median latency of **1.85 ms** per full journey.
 * **National Fleet Feasibility**: At measured benchmark throughput (508 journeys/sec), approximately 13,000-train recalculation is estimated at ~25 seconds on a single CPU core.
@@ -160,7 +160,7 @@ It replaces static train density heuristics with an $O(1)$ **Downstream Network 
 ┌──────────────────────────────────────────────────────────────────────────────────────────┐
 │                           CONTROL ROOM OPERATIONAL DASHBOARD                             │
 │ • Leaflet Geospatial Visualization of Railway Corridors & Dynamic Train Markers          │
-│ • Side-by-Side Comparison: Scheduled vs NTES Naive vs RailETA vs Ground-Truth            │
+│ • Side-by-Side Comparison: Scheduled vs NTES Naive vs GaTi vs Ground-Truth            │
 │ • What-If Scenario Event Injection (TSR / Caution Orders / Unscheduled Crossing Halts)   │
 │ • Downstream Delay Pressure Indicators with Dynamic Corridor Badges                      │
 └──────────────────────────────────────────────────────────────────────────────────────────┘
@@ -184,9 +184,9 @@ In recent railway research—specifically:
 the authors proved that **railway delays exhibit distinct spatial propagation and temporal memory across connected stations**.
 
 ### 2. Conceptual Adaptation: Station Delay vs Individual Train ETA
-RSTGCN solves for **station-level average arrival delay** across an entire regional grid. RailETA's target is different: **individual-train sectional travel times**.
+RSTGCN solves for **station-level average arrival delay** across an entire regional grid. GaTi's target is different: **individual-train sectional travel times**.
 
-Rather than importing an opaque, compute-heavy deep graph neural network requiring dedicated GPU clusters, RailETA adapts the **core spatial-temporal delay propagation insights** into a lightweight, sub-millisecond latency **Downstream Network State Engine** ([`src/engine/network_state.py`](file:///d:/ETA/src/engine/network_state.py)):
+Rather than importing an opaque, compute-heavy deep graph neural network requiring dedicated GPU clusters, GaTi adapts the **core spatial-temporal delay propagation insights** into a lightweight, sub-millisecond latency **Downstream Network State Engine** ([`src/engine/network_state.py`](file:///d:/ETA/src/engine/network_state.py)):
 
 ```
              [Current Train Position]
@@ -235,7 +235,7 @@ Network state features (`rolling_station_mean_delay_6h`, `net_1hop_active_count`
 
 ## 🔬 Feature Engineering & 4-Tier Hierarchy (M0–M3)
 
-RailETA implements a structured, additive 4-tier feature hierarchy ([`src/model/features.py`](file:///d:/ETA/src/model/features.py)) to systematically validate incremental value:
+GaTi implements a structured, additive 4-tier feature hierarchy ([`src/model/features.py`](file:///d:/ETA/src/model/features.py)) to systematically validate incremental value:
 
 ```
 M0: Baseline (23 features) ────► M1: Basic Downstream (+4) ────► M2: Multi-Hop (+4) ────► M3: Full RSTGCN (+3)
@@ -305,7 +305,7 @@ Every model tier was trained with identical L1 regression loss and evaluated on 
 3. **Zero Regression Proof**: Base accuracy never degrades across the ablation ladder ($6.247 \pm 0.005$ min MAE across all 4 tiers), proving seamless integration without regression risk.
 
 ### Production Model Selection Rationale:
-RailETA benchmarked both **Model Tier M1 (27 features)** and **Model Tier M3 (34 features)** on the 164,564 holdout test set:
+GaTi benchmarked both **Model Tier M1 (27 features)** and **Model Tier M3 (34 features)** on the 164,564 holdout test set:
 - **Model M1** yields the lowest absolute mean error (**6.237 min MAE**, a 27.48% improvement over NTES).
 - **Model M3** yields the highest arrival punctuality within $\pm 5$ minutes (**71.85%**) and the lowest P90 tail error (**13.94 min**), incorporating temporal rolling memory features ($H-1$, $H-2$, 6-hour windows) crucial for capturing cascading congestion trends.
 
@@ -324,13 +324,13 @@ To evaluate performance under varying degrees of network stress, all 164,564 hol
 | **Medium (15–30 min delay ahead)** | 24,408 | 14.8% | 9.713m | 9.571m | 7.256m | **7.248m** | **25.4% gain** | 15.81m |
 | **High ($\ge$ 30 min delay ahead)** | 30,468 | 18.5% | 11.164m | 10.960m | 8.521m | **8.534m** | **23.6% gain** | 18.84m |
 
-> **Operational Insight**: In severe congestion scenarios ($\ge 30$ min delay ahead), the NTES schedule collapses with an average error of **11.16 minutes**. RailETA restricts error to **8.53 minutes**—absorbing downstream shockwaves and saving dispatchers over **2.6 minutes of unexpected error per section**.
+> **Operational Insight**: In severe congestion scenarios ($\ge 30$ min delay ahead), the NTES schedule collapses with an average error of **11.16 minutes**. GaTi restricts error to **8.53 minutes**—absorbing downstream shockwaves and saving dispatchers over **2.6 minutes of unexpected error per section**.
 
 ---
 
 ## 🔬 Dual-Target Architecture Waterfall Benchmark
 
-To prevent target mismatch between full-section traversals and in-flight active journeys, RailETA bifurcates validation into two distinct mathematical evaluations:
+To prevent target mismatch between full-section traversals and in-flight active journeys, GaTi bifurcates validation into two distinct mathematical evaluations:
 
 ### Benchmark 1: Full-Section Station-to-Station Traversal ($N = 164,564$)
 *Target: `actual_section_time_mins` (Consecutive departure to arrival)*
@@ -356,7 +356,7 @@ To prevent target mismatch between full-section traversals and in-flight active 
 
 ## ⚙ Rule Engine: Deterministic Railway Constraints (G&SR / WTT)
 
-Machine learning models optimize purely for statistical error loss; they have no inherent concept of physical braking distances or civil speed limits. RailETA clamps all predictions through a 4-stage deterministic **Railway Constraint Engine** ([`src/engine/rule_engine.py`](file:///d:/ETA/src/engine/rule_engine.py)):
+Machine learning models optimize purely for statistical error loss; they have no inherent concept of physical braking distances or civil speed limits. GaTi clamps all predictions through a 4-stage deterministic **Railway Constraint Engine** ([`src/engine/rule_engine.py`](file:///d:/ETA/src/engine/rule_engine.py)):
 
 ```
 ML Prediction ──► STAGE 1: BOUNDS ──► STAGE 2: RECOVERY ──► STAGE 3: EVENTS ──► STAGE 4: AUDIT
@@ -400,7 +400,7 @@ All 21 railway constraint boundary tests pass in [`tests/test_rule_engine.py`](f
 
 ## 🏃 Post-ML Kinematic Blending & 4-State Motion Classifier
 
-For active in-flight sections, RailETA implements a 4-state kinematic state machine ([`src/engine/state_correction.py`](file:///d:/ETA/src/engine/state_correction.py)):
+For active in-flight sections, GaTi implements a 4-state kinematic state machine ([`src/engine/state_correction.py`](file:///d:/ETA/src/engine/state_correction.py)):
 
 | Motion State | Speed & Progress Condition | Operational Adjustment & Physics Rationale |
 |:---|:---|:---|
@@ -418,7 +418,7 @@ For active in-flight sections, RailETA implements a 4-state kinematic state mach
 
 ## 🔄 Dual-Mode Telemetry: Historical Replay vs Live Telemetry
 
-RailETA operates under a polymorphic provider architecture (`TrainStateProvider`) supporting seamless runtime hot-switching without restarts:
+GaTi operates under a polymorphic provider architecture (`TrainStateProvider`) supporting seamless runtime hot-switching without restarts:
 
 | Dimension | Mode 1: Historical Replay | Mode 2: Live Telemetry |
 |:---|:---|:---|
@@ -449,7 +449,7 @@ Indian Railways operates ~13,000 trains daily. Concurrency and burst scalability
 
 ## 🎯 Real-Time Self-Evaluation Loop & Durable Audit Logging
 
-RailETA satisfies the hackathon requirement of **continuous self-evaluation without human intervention** ([`src/engine/prediction_logger.py`](file:///d:/ETA/src/engine/prediction_logger.py)):
+GaTi satisfies the hackathon requirement of **continuous self-evaluation without human intervention** ([`src/engine/prediction_logger.py`](file:///d:/ETA/src/engine/prediction_logger.py)):
 * **Circular Ring Buffer**: The 250 most recent prediction-to-arrival pairings are stored in memory for real-time dashboard telemetry.
 * **Durable Append-Only Store**: Every evaluated prediction is permanently written to [`logs/prediction_eval_log.jsonl`](file:///d:/ETA/logs/prediction_eval_log.jsonl) for forensic auditing.
 * **Rolling Corridor Metrics**: Tracks rolling MAE, RMSE, and error distributions individually per active corridor.
@@ -458,7 +458,7 @@ RailETA satisfies the hackathon requirement of **continuous self-evaluation with
 
 ## 🎯 Empirical Confidence Calibration
 
-RailETA's confidence score strictly correlates with observed error probability across the 164,564 holdout records:
+GaTi's confidence score strictly correlates with observed error probability across the 164,564 holdout records:
 
 | Confidence Tier | Sample Share | Mean Score | Observed MAE | Observed RMSE | Arrival $\le 5$m | Arrival $\le 15$m | P90 Error |
 |:---|---:|---:|---:|---:|---:|---:|---:|
@@ -475,25 +475,25 @@ RailETA's confidence score strictly correlates with observed error probability a
 * **Operational Setting**: Dense Gangetic winter fog between DDU and Prayagraj + active $30\text{ km/h}$ TSR over $15\text{ km}$ outside Mirzapur.
 * **NTES Failure**: Observed $+14\text{ min}$ departure delay and naively forecasted $+14\text{ min}$ arrival at Prayagraj, blind to fog and caution orders.
 * **Ground Truth**: Train arrived **$+54.0\text{ min}$ late**.
-* **RailETA Performance**: Weather integration predicted $+18.5\text{ min}$ traversal; TSR physics added $+21.0\text{ min}$; forecasted **$+51.2\text{ min}$ late** (**Error: 2.8 min** vs NTES error of 40.0 min).
+* **GaTi Performance**: Weather integration predicted $+18.5\text{ min}$ traversal; TSR physics added $+21.0\text{ min}$; forecasted **$+51.2\text{ min}$ late** (**Error: 2.8 min** vs NTES error of 40.0 min).
 
 ### Case Study 2: The Rajdhani Priority Recovery (12951 Tejas Rajdhani — Mumbai to New Delhi)
 * **Operational Setting**: Superfast express delayed by $+36\text{ min}$ at Kota Junction due to late loco turnover. Controller gives clear signal run.
 * **NTES Failure**: Locked in a static $+36\text{ min}$ delay across all forward stations, assuming zero timetable make-up.
 * **Ground Truth**: Loco pilot recovered time across high-speed Sawai Madhopur–Mathura section, arriving **$+22.0\text{ min}$ late**.
-* **RailETA Performance**: WTT Recovery Cap constrained maximum section recovery to 15% of timetable allowance while respecting $130\text{ km/h}$ MPS; forecasted **$+24.1\text{ min}$ late** (**Error: 2.1 min** vs NTES error of 14.0 min).
+* **GaTi Performance**: WTT Recovery Cap constrained maximum section recovery to 15% of timetable allowance while respecting $130\text{ km/h}$ MPS; forecasted **$+24.1\text{ min}$ late** (**Error: 2.1 min** vs NTES error of 14.0 min).
 
 ### Case Study 3: The Unscheduled Crossing & Mid-Section Halt (12801 Purushottam Express — Puri to New Delhi)
 * **Operational Setting**: Emergency halt at red home signal outside Kanpur Central due to platform congestion.
 * **NTES Failure**: Reported train "Running at Normal Speed" based on a timestamp from 45 minutes prior.
 * **Ground Truth**: Dead halt at km 1012, adding unexpected **$+28.0\text{ min}$ delay**.
-* **RailETA Performance**: Live speed $v = 0.0\text{ km/h}$ at progress $p = 0.48$ triggered `UNEXPECTED_STOP`; injected $+3.0\text{ min}$ signal clearance buffer; forecasted **$+26.5\text{ min}$ late** (**Error: 1.5 min** vs NTES error of 28.0 min).
+* **GaTi Performance**: Live speed $v = 0.0\text{ km/h}$ at progress $p = 0.48$ triggered `UNEXPECTED_STOP`; injected $+3.0\text{ min}$ signal clearance buffer; forecasted **$+26.5\text{ min}$ late** (**Error: 1.5 min** vs NTES error of 28.0 min).
 
 ---
 
 ## 🛡️ SIH Judge Interrogation Defense Dossier (The 7 Kill Shots)
 
-| # | Judge Interrogation Vector | Common Student Vulnerability | RailETA's Mathematically Audited Defense | Primary Evidence File |
+| # | Judge Interrogation Vector | Common Student Vulnerability | GaTi's Mathematically Audited Defense | Primary Evidence File |
 |:---:|:---|:---|:---|:---|
 | **1** | *"Is your MAE free from future data leakage?"* | Shuffling data randomly, leaking future delays into historical averages. | **Strict Chronological Holdout**: Sep 1–22 for training; all aggregates computed strictly on train split and joined forward. Zero future information leaks. | [`tests/test_no_leakage.py`](file:///d:/ETA/tests/test_no_leakage.py) |
 | **2** | *"Is your live feed genuine, or are you faking telemetry?"* | Hardcoding random numbers disguised as live feeds. | **Polymorphic Dual-Mode Architecture**: Mode 1 replays genuine 164K holdout records. Mode 2 connects to RailRadar REST API with token bucket. If offline, system explicitly displays `Simulation Standby` watermark—never fakes GPS. | [`src/integrations/railradar.py`](file:///d:/ETA/src/integrations/railradar.py) |
@@ -513,7 +513,7 @@ Built with **Vanilla HTML/CSS/JS + Leaflet.js** — zero external framework depe
 * **Corridor Selector**: Switch between 4 representative train corridors across priority classes (`12303`, `12951`, `12801`, `12626`).
 * **Live Route Map**: Leaflet.js map with pulsing train position marker, station nodes, and dynamic color-coded track segments.
 * **Step-by-Step Replay**: Advance station-by-station through historical holdout runs, observing downstream delay pressure cascade dynamically.
-* **Multi-Model Comparison Table**: Side-by-side comparison of Scheduled vs NTES Naive vs RailETA vs Ground Truth.
+* **Multi-Model Comparison Table**: Side-by-side comparison of Scheduled vs NTES Naive vs GaTi vs Ground Truth.
 * **What-If Scenario Event Injection**: Inject TSR caution orders, maintenance blocks, or unscheduled crossing halts and observe instantaneous trajectory recalculation.
 * **Codified Audit Trail**: Real-time explanation log displaying statutory G&SR rule citations, delta minutes, and `[NETWORK_CONGESTION]` pressure advisories.
 * **Benchmark Modal**: Interactive inspection of the M0–M3 ablation ladder and network-pressure scorecard.
@@ -595,8 +595,8 @@ Access the operational dashboard immediately at: **`http://localhost:8000/`**
 
 ### Option 2: Docker CLI
 ```bash
-docker build -t raileta:latest .
-docker run -d -p 8000:8000 -v $(pwd)/logs:/app/logs --name raileta-engine raileta:latest
+docker build -t gati:latest .
+docker run -d -p 8000:8000 -v $(pwd)/logs:/app/logs --name gati-engine gati:latest
 ```
 
 ---
@@ -708,7 +708,7 @@ pytest tests/ -v
 
 ## 🏆 SIH Judging Criteria Alignment
 
-| SIH Criterion | How RailETA Directly Satisfies It | Operational Evidence |
+| SIH Criterion | How GaTi Directly Satisfies It | Operational Evidence |
 |:---|:---|:---|
 | **Novelty & Creativity** | Hybrid ML + deterministic rule engine + RSTGCN-inspired downstream network state engine | Eliminates single-train blind spot while guaranteeing strict G&SR 4.08 constraint enforcement |
 | **Technical Depth** | 34-feature gradient boosted tree, 2D dense spatial-temporal grid lookups, leakage-free temporal splits | Complete M0–M3 ablation ladder evaluated on 1.22M genuine movement records |

@@ -1,4 +1,4 @@
-# RailETA — SIH 26028 Comprehensive Requirement Traceability Matrix
+# GaTi — SIH 26028 Comprehensive Requirement Traceability Matrix
 
 > **Problem Statement**: SIH 26028 — Real-Time Train Delay & Dynamic ETA Prediction Engine  
 > **Target System**: Indian Railways National Network  

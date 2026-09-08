@@ -139,7 +139,7 @@ class RailRadarProvider(TrainStateProvider):
         url = f"{self.base_url}{endpoint}"
         headers = {
             "Accept": "application/json",
-            "User-Agent": "RailETA-DynamicPredictionEngine/2.0"
+            "User-Agent": "GaTi-DynamicPredictionEngine/2.0"
         }
         if self.api_key:
             headers["Authorization"] = f"Bearer {self.api_key}"

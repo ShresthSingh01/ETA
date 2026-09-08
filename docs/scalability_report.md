@@ -1,4 +1,4 @@
-# RailETA — National-Scale Concurrency & Scalability Benchmark Report
+# GaTi — National-Scale Concurrency & Scalability Benchmark Report
 
 > **Audited Test Suite**: [`tests/test_scalability.py`](file:///d:/ETA/tests/test_scalability.py)  
 > **Target Problem Statement**: SIH 26028 (Pan-India Production Scalability)  
@@ -8,14 +8,14 @@
 
 ## 1. Executive Summary & Critical Distinction
 
-A frequent critique in national-scale infrastructure hackathons is confusing **computational throughput** with **third-party API quota capacity**. RailETA makes this distinction rigorous and explicit:
+A frequent critique in national-scale infrastructure hackathons is confusing **computational throughput** with **third-party API quota capacity**. GaTi makes this distinction rigorous and explicit:
 
 ```mermaid
 graph LR
     subgraph Third-Party Telemetry Layer
         A[RailRadar / RTIS Live Feed] -->|Token-Bucket Rate Limiter: 30 req/min| B[In-Memory TTL Cache 60s]
     end
-    subgraph High-Throughput RailETA Inference Engine
+    subgraph High-Throughput GaTi Inference Engine
         B -->|Sub-millisecond State Cache| C[NumPy Feature Vectorization]
         C -->|LightGBM Inference < 1ms| D[Tree Boosted Delays]
         D -->|G&SR Safety Clamps| E[Deterministic Rule Engine]

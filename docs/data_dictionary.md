@@ -1,4 +1,4 @@
-# RailETA — Data Dictionary & Schema Specification
+# GaTi — Data Dictionary & Schema Specification
 
 This document provides the definitive data dictionary for the canonical training and inference dataset `section_runs_weather.parquet` (1,282,325 records) and auxiliary network tables.
 

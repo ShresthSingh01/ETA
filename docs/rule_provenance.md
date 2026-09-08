@@ -1,4 +1,4 @@
-# RailETA — Railway Rule & Operating Constraint Provenance Registry
+# GaTi — Railway Rule & Operating Constraint Provenance Registry
 
 > **Target Problem Statement**: SIH 26028 (Rule Provenance & Physical Realism)  
 > **Source Documents**: Indian Railways General & Subsidiary Rules (G&SR), Working Time Table (WTT), Indian Railway Schedule of Dimensions (IRSOD), Permanent Way Manual (PWM)  
@@ -8,7 +8,7 @@
 
 ## 1. The 7 Official Rule Classifications
 
-In accordance with SIH Evaluation Guideline Part B §5, every rule enforced by RailETA is classified into one of 7 official provenance categories:
+In accordance with SIH Evaluation Guideline Part B §5, every rule enforced by GaTi is classified into one of 7 official provenance categories:
 
 ```mermaid
 graph TD
@@ -59,8 +59,8 @@ graph TD
 
 > [!IMPORTANT]
 > **Statutory Clarification on 15% Recovery Cap**:  
-> RailETA explicitly catalogs the **15% Section Recovery Cap** as an **`ENGINEERING_HEURISTIC`** derived from the Indian Railways Working Time Table (WTT) commercial slack allowance practice.  
-> We make **no claim** that 15% is a statutory universal limit written in the G&SR rulebook. In Indian Railways operations, WTT schedules include approximately 10–15% commercial makeup time to absorb minor junction delays. RailETA formalizes this empirical reality to prevent unconstrained statistical models from predicting unrealistic sprint recoveries.
+> GaTi explicitly catalogs the **15% Section Recovery Cap** as an **`ENGINEERING_HEURISTIC`** derived from the Indian Railways Working Time Table (WTT) commercial slack allowance practice.  
+> We make **no claim** that 15% is a statutory universal limit written in the G&SR rulebook. In Indian Railways operations, WTT schedules include approximately 10–15% commercial makeup time to absorb minor junction delays. GaTi formalizes this empirical reality to prevent unconstrained statistical models from predicting unrealistic sprint recoveries.
 
 ---
 

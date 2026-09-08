@@ -1,7 +1,7 @@
 """
 confidence_calibration.py - Empirical Calibration of Prediction Confidence Scores.
 
-Validates RailETA's confidence scoring mechanism against 164,564 genuine holdout test runs:
+Validates GaTi's confidence scoring mechanism against 164,564 genuine holdout test runs:
 - Segregates predictions into empirical confidence tiers (>=90%, 80-90%, 70-80%, 60-70%, <60%)
 - Computes empirical error distributions, MAE, and arrival accuracy within +/-3m, +/-5m, +/-10m, +/-15m
 - Calibrates confidence semantics so confidence scores reflect verified historical accuracy intervals
@@ -33,7 +33,7 @@ def run_confidence_calibration(
     output_dir: str = 'models'
 ) -> Dict[str, Any]:
     print("=" * 70)
-    print("RAILETA: EMPIRICAL CONFIDENCE CALIBRATION & ERROR BOUNDS")
+    print("GATI: EMPIRICAL CONFIDENCE CALIBRATION & ERROR BOUNDS")
     print("=" * 70)
 
     out_dir = Path(output_dir)
@@ -131,10 +131,10 @@ def generate_calibration_report(results: Dict[str, Any], filepath: str) -> None:
         )
     rows_str = "\n".join(rows)
 
-    md = f"""# RailETA — Empirical Confidence Calibration & Error Bounds Dossier
+    md = f"""# GaTi — Empirical Confidence Calibration & Error Bounds Dossier
 
 > **Dataset**: 164,564 holdout test movement records (September 27–30, 2024).  
-> **Evaluation Protocol**: Calibration curves computed strictly against observed arrival errors to prove that RailETA's confidence score reflects true statistical reliability.
+> **Evaluation Protocol**: Calibration curves computed strictly against observed arrival errors to prove that GaTi's confidence score reflects true statistical reliability.
 
 ---
 
@@ -152,7 +152,7 @@ def generate_calibration_report(results: Dict[str, Any], filepath: str) -> None:
    As confidence decreases from Tier 1 ($\\ge 90\\%$) to Tier 5 ($< 60\\%$), the empirical Mean Absolute Error strictly and monotonically increases from **4.92 min to 11.23 min**. This proves that the confidence indicator is statistically grounded in error probability.
 
 2. **High-Confidence Reliability**:  
-   When RailETA reports **$\\ge 90\\%$ confidence**, **79.4% of all trains arrive within $\\pm 5$ minutes**, and **93.8% arrive within $\\pm 15$ minutes**.
+   When GaTi reports **$\\ge 90\\%$ confidence**, **79.4% of all trains arrive within $\\pm 5$ minutes**, and **93.8% arrive within $\\pm 15$ minutes**.
 
 3. **Advisory Utility for Controllers**:  
    For trains flagged with $<70\\%$ confidence, controllers can immediately anticipate higher volatility ($P90$ error of $\\sim 22$ minutes) and take proactive loop clearance actions.

@@ -35,7 +35,7 @@ from src.model.trainer import evaluate_predictions, train_lgbm_model
 
 def run_headway_study(parquet_path: str = 'data/processed/section_runs_weather.parquet'):
     print("=" * 70)
-    print("RAILETA: DOWNSTREAM HEADWAY & NETWORK CONGESTION STUDY")
+    print("GATI: DOWNSTREAM HEADWAY & NETWORK CONGESTION STUDY")
     print("=" * 70)
 
     print("Loading dataset splits...")
@@ -115,7 +115,7 @@ def run_headway_study(parquet_path: str = 'data/processed/section_runs_weather.p
    The incremental MAE reduction achieved by adding headway ({delta_mae:+.4f} min) is modest because historical edge density (`edge_ntrains`) and immediate departure delay (`dep_delay_from`) already encode ~80% of local congestion dynamics.
 
 2. **Engineering Prudence Decision**:  
-   Following the engineering rule ("Never introduce structural complexity or retrain production weights unless empirical gain $\\ge 0.10$ MAE"), RailETA **maintains its proven 6.247-minute LightGBM production weights**, keeping headway as an offline research finding rather than a last-minute disruption.
+   Following the engineering rule ("Never introduce structural complexity or retrain production weights unless empirical gain $\\ge 0.10$ MAE"), GaTi **maintains its proven 6.247-minute LightGBM production weights**, keeping headway as an offline research finding rather than a last-minute disruption.
 
 3. **Status**: **{recommendation}**
 """

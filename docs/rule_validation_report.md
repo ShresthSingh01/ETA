@@ -1,4 +1,4 @@
-# RailETA — Rule Engine Validation & Boundary Assertion Dossier
+# GaTi — Rule Engine Validation & Boundary Assertion Dossier
 
 > **Audited Test Suite**: [`tests/test_rule_engine.py`](file:///d:/ETA/tests/test_rule_engine.py)  
 > **Status**: ALL 21 TESTS PASSING (100% SUCCESS)  
@@ -8,7 +8,7 @@
 
 ## 1. Executive Summary
 
-This dossier provides verifiable, automated test evidence demonstrating that the RailETA Rule Engine strictly enforces railway physical constraints while rejecting invalid, out-of-scope, expired, or malformed operational events.
+This dossier provides verifiable, automated test evidence demonstrating that the GaTi Rule Engine strictly enforces railway physical constraints while rejecting invalid, out-of-scope, expired, or malformed operational events.
 
 ---
 

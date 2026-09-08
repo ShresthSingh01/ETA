@@ -1,4 +1,4 @@
-# RailETA — Empirical Ablation Report & Feature Importance Study
+# GaTi — Empirical Ablation Report & Feature Importance Study
 
 ## 1. Executive Summary
 
@@ -20,8 +20,8 @@ All models were trained on Sep 1–22, tuned on Sep 23–26, and evaluated on th
 | **Baseline 3: Linear Ridge Regression (Val)** | 6 (Linear subset) | 9.001 | 22.705 | 0.7591 | 55.68% | 77.36% | 86.04% | 19.07 |
 | **Ablation A: Without Weather Features (Val)** | 16 (No Weather) | 6.284 | 21.199 | 0.7900 | 72.05% | 85.16% | 90.76% | 14.12 |
 | **Ablation B: Without Network Topology (Val)** | 22 (No Topology) | 6.284 | 21.230 | 0.7894 | 72.04% | 85.18% | 90.76% | 14.12 |
-| **RailETA Main Model (Raw ML)** | **23 Features** | **6.247** | **23.521** | **0.7551** | **71.79%** | **85.29%** | **90.90%** | **13.96** |
-| **RailETA + Deterministic Rule Engine** | **23 Feat. + Rules** | **6.908** | **23.877** | **0.7477** | **68.14%** | **82.65%** | **89.11%** | **16.00** |
+| **GaTi Main Model (Raw ML)** | **23 Features** | **6.247** | **23.521** | **0.7551** | **71.79%** | **85.29%** | **90.90%** | **13.96** |
+| **GaTi + Deterministic Rule Engine** | **23 Feat. + Rules** | **6.908** | **23.877** | **0.7477** | **68.14%** | **82.65%** | **89.11%** | **16.00** |
 
 ---
 

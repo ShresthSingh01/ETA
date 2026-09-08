@@ -35,7 +35,7 @@ def run_ablation_waterfall(
     output_dir: str = 'models'
 ) -> Dict[str, Any]:
     print("=" * 70)
-    print("RAILETA: EXHAUSTIVE 6-LAYER ABLATION WATERFALL BENCHMARK")
+    print("GATI: EXHAUSTIVE 6-LAYER ABLATION WATERFALL BENCHMARK")
     print("=" * 70)
 
     out_path = Path(output_dir)
@@ -244,7 +244,7 @@ def generate_markdown_report(results: Dict[str, Any], filepath: str) -> None:
     le_10 = r"\le 10"
     le_15 = r"\le 15"
 
-    md = f"""# RailETA — Dual-Target Ablation Waterfall Benchmark Report
+    md = f"""# GaTi — Dual-Target Ablation Waterfall Benchmark Report
 
 > **Dataset**: 164,564 holdout test movement records (September 27–30, 2024).  
 > **Evaluation Protocol**: Strict chronological holdout; zero forward leakage; 100% genuine NTES movement records.  

@@ -1,4 +1,4 @@
-# RailETA — Deep Error Analysis & Outlier Classification Report
+# GaTi — Deep Error Analysis & Outlier Classification Report
 
 > **Dataset Analyzed**: 164,564 holdout test movement records (September 27–30, 2024)  
 > **Target Problem Statement**: SIH 26028 (Transparency & Model Limitations)  
@@ -34,7 +34,7 @@ pie title Root Cause Distribution of Outlier Predictions (>45m Error)
 
 ### Breakdown by Category
 
-| Category | Proportion | Operational Manifestation | Why Pure ML Misses It | RailETA Mitigating Mechanism |
+| Category | Proportion | Operational Manifestation | Why Pure ML Misses It | GaTi Mitigating Mechanism |
 | :--- | :--- | :--- | :--- | :--- |
 | **Rare Operational Disruption** | **38%** | Track fracture, cattle run-over, local agitation, rake failure. | These are black-swan anomalies unrepresented in historical training logs. | **Event Injection Layer**: What-If / Caution Order events immediately adjust ETA once reported. |
 | **Unscheduled Maintenance Block** | **26%** | Sudden Overhead Equipment (OHE) failure, emergency ballast tamping. | The train sits stationary in a mid-section block with zero prior warning. | **Kinematic Unexpected Stop**: Triggers `UNEXPECTED_STOP` after 3 mins, adds loop clearance buffers. |
@@ -69,6 +69,6 @@ pie title Root Cause Distribution of Outlier Predictions (>45m Error)
 
 ## 4. Architectural Safeguards Against Outliers
 
-1. **Confidence-Tier Guardrails**: RailETA does not present all predictions as equally certain. Predictions with sparse history or extreme upstream delay are categorized into `MEDIUM` or `LOW` confidence tiers, explicitly prompting dispatchers to verify with section controllers.
+1. **Confidence-Tier Guardrails**: GaTi does not present all predictions as equally certain. Predictions with sparse history or extreme upstream delay are categorized into `MEDIUM` or `LOW` confidence tiers, explicitly prompting dispatchers to verify with section controllers.
 2. **Deterministic Clamping**: Predictions can never violate Maximum Permissible Speed (MPS), preventing unphysical sprint hallucinations during recovery.
 3. **No Hidden Failures**: All operational anomalies and provider fallbacks are logged to persistent storage (`LivePredictionLogger`) for ongoing performance auditing.

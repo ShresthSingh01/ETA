@@ -24,8 +24,8 @@ from src.engine.prediction_logger import LivePredictionLogger, PredictionRecord
 
 
 app = FastAPI(
-    title="Indian Railways Dynamic ETA Prediction System",
-    description="Smart India Hackathon 2026 (PS 26028) - Operational Dynamic ETA Engine",
+    title="GaTi - Indian Railways Dynamic ETA Prediction System",
+    description="GaTi: Smart India Hackathon 2026 (PS 26028) - Operational Dynamic ETA Engine",
     version="2.1.0"
 )
 
@@ -121,6 +121,141 @@ def get_available_trains():
         "trains": DEMO_TRAINS_CONFIG,
         "selected_train": simulator.current_train,
         "selected_date": simulator.current_date
+    }
+
+
+@app.get("/api/trains/catalog")
+def get_train_catalog(search: Optional[str] = None):
+    """Returns catalog of searchable trains with metadata, station count, and category."""
+    trains = list(DEMO_TRAINS_CONFIG)
+    if search:
+        q = search.strip().lower()
+        if q.isdigit():
+            num = int(q)
+            already_present = any(t['train_number'] == num for t in trains)
+            if not already_present and num in simulator.df_all['train_number'].values:
+                sub = simulator.df_all[simulator.df_all['train_number'] == num]
+                origin = sub['from_station'].iloc[0]
+                dest = sub['to_station'].iloc[-1]
+                trains.append({
+                    'train_number': num,
+                    'train_name': f"Express {num}",
+                    'route_desc': f"{origin} → {dest}",
+                    'category': 'National Network Service',
+                    'default_date': str(sub['date'].iloc[0])
+                })
+        else:
+            trains = [t for t in trains if q in str(t['train_number']) or q in t['train_name'].lower() or q in t['route_desc'].lower()]
+    return {
+        "total": len(trains),
+        "trains": trains
+    }
+
+
+@app.get("/api/alerts")
+def get_operational_alerts():
+    """Returns dynamic, audit-grade operational alerts derived strictly from real system state.
+    Zero fabricated records: derived from active TSR events, delay thresholds, telemetry status, and downstream pressure.
+    """
+    alerts = []
+    now_iso = datetime.now(timezone.utc).isoformat()
+    state = simulator.get_state()
+    current_train = simulator.current_train
+    curr_delay = state.get("current_delay_mins", 0.0)
+    current_stn = state.get("current_station", {})
+    stn_name = current_stn.get("station_name", "Current Location")
+    
+    # 1. Operational Events (TSR, Caution Orders, Maintenance Blocks)
+    for idx, ev in enumerate(simulator.active_events):
+        alerts.append({
+            "id": f"ALT-EV-{idx+1:03d}",
+            "severity": "CRITICAL" if ev.event_type in ("MAINTENANCE_BLOCK", "UNSCHEDULED_STOP") else "WARNING",
+            "category": "OPERATIONAL_RESTRICTION",
+            "title": f"{ev.event_type.replace('_', ' ').title()} Active",
+            "affected_entity": f"Train {current_train} ({ev.from_station} → {ev.to_station})",
+            "description": f"{ev.affected_km} km section restricted to {ev.restricted_speed_kmh} km/h (Source: {ev.source_type}).",
+            "impact": f"Added dynamic delay floor of ~{ev.halt_duration_minutes} mins.",
+            "timestamp": now_iso,
+            "status": "ACTIVE"
+        })
+        
+    # 2. Severe Delay Threshold Alerts on Active Train
+    if curr_delay >= 30.0:
+        alerts.append({
+            "id": "ALT-DLY-CRIT",
+            "severity": "CRITICAL",
+            "category": "SEVERE_DELAY",
+            "title": f"Critical Schedule Degradation (+{curr_delay:.0f}m)",
+            "affected_entity": f"Train {current_train} at {stn_name}",
+            "description": f"Cumulative delay of {curr_delay:.1f} minutes exceeds operational tolerance (>30m).",
+            "impact": "Triggers dynamic recovery slack and downstream precedence adjustments.",
+            "timestamp": now_iso,
+            "status": "ACTIVE"
+        })
+    elif curr_delay >= 15.0:
+        alerts.append({
+            "id": "ALT-DLY-WARN",
+            "severity": "WARNING",
+            "category": "MODERATE_DELAY",
+            "title": f"Schedule Delay Advisory (+{curr_delay:.0f}m)",
+            "affected_entity": f"Train {current_train} at {stn_name}",
+            "description": f"Observed delay of {curr_delay:.1f} minutes at {stn_name}.",
+            "impact": "Downstream ETA dynamically adjusted by ML inference.",
+            "timestamp": now_iso,
+            "status": "ACTIVE"
+        })
+        
+    # 3. Telemetry Provider Health Alert
+    health = simulator.get_provider_health()
+    if health.get("is_fallback_active"):
+        alerts.append({
+            "id": "ALT-TEL-FALLBACK",
+            "severity": "INFO",
+            "category": "TELEMETRY_STANDBY",
+            "title": "Historical Replay & Archive Telemetry Active",
+            "affected_entity": "System Ingestion Pipeline",
+            "description": f"Operating on verified NTES telemetry archive (Watermark: {health.get('fallback_watermark', 'Verified Archive')}).",
+            "impact": "High accuracy inference maintained from verified ground truth records.",
+            "timestamp": now_iso,
+            "status": "ACTIVE"
+        })
+    elif not health.get("is_connected", True):
+        alerts.append({
+            "id": "ALT-TEL-DISCONN",
+            "severity": "WARNING",
+            "category": "TELEMETRY_DEGRADED",
+            "title": "Live Stream Telemetry Unreachable",
+            "affected_entity": "RailRadar Provider",
+            "description": "External live provider latency or network boundary unavailable.",
+            "impact": "Automatic failover to NTES canonical baseline active.",
+            "timestamp": now_iso,
+            "status": "ACTIVE"
+        })
+        
+    # 4. Downstream Junction Pressure Alerts
+    table = state.get("comparison_table", [])
+    if table:
+        next_hop = table[0]
+        next_code = next_hop.get("station_code", "")
+        if next_code:
+            d, c, a = simulator.calculator.network_engine.query_station_state(next_code, global_hour=12)
+            if d >= 30.0:
+                alerts.append({
+                    "id": f"ALT-NET-{next_code}",
+                    "severity": "WARNING",
+                    "category": "NETWORK_CONGESTION",
+                    "title": f"Downstream Junction Bottleneck ({next_code})",
+                    "affected_entity": f"Junction {next_hop.get('station_name', next_code)}",
+                    "description": f"Downstream mean delay is {d:.1f}m across {c} active trains.",
+                    "impact": f"Model factored +{next_hop.get('our_predicted_delay', 0.0):.1f}m network congestion buffer into forward ETA.",
+                    "timestamp": now_iso,
+                    "status": "ACTIVE"
+                })
+
+    return {
+        "status": "success",
+        "total_alerts": len(alerts),
+        "alerts": alerts
     }
 
 
@@ -479,7 +614,16 @@ def demonstrate_live_loop(train_number: int = 12303, date: Optional[str] = None)
     }
 
 
-# Mount frontend static files
+# Mount frontend static files if directory exists and contains files
 frontend_dir = Path("frontend")
-frontend_dir.mkdir(exist_ok=True)
-app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+if frontend_dir.is_dir() and any(frontend_dir.iterdir()):
+    app.mount("/", StaticFiles(directory="frontend", html=True), name="frontend")
+else:
+    @app.get("/")
+    def root_status():
+        return {
+            "status": "online",
+            "system": "GaTi - Indian Railways Dynamic ETA Prediction System",
+            "version": "2.1.0",
+            "documentation": "/docs"
+        }

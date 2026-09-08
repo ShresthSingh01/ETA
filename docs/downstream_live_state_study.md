@@ -1,4 +1,4 @@
-# RailETA — Downstream Live State & Operational Pressure Study
+# GaTi — Downstream Live State & Operational Pressure Study
 
 > **Target Problem Statement**: SIH 26028 (Downstream Network Intelligence)  
 > **Study Population**: 150,000 chronological train movement records across Indian Railways trunk corridors  
@@ -36,7 +36,7 @@ The experimental delta (-0.006 minutes, i.e. 0.36 seconds) is statistically insi
 Per the **YAGNI & Ponytail** principles:
 > *"Complexity is retained only when it provides measurable, proven value."*
 
-Instead of forcing artificial downstream features into the tree model (which would risk overfitting and complicate real-time data pipelines), RailETA:
+Instead of forcing artificial downstream features into the tree model (which would risk overfitting and complicate real-time data pipelines), GaTi:
 1. **Preserves the lightweight 23-feature LightGBM model** (<1ms inference, 5.7 MB binary).
 2. **Exposes Downstream Operational Pressure via Control-Room Advisories**:
    - `get_station_board(station_code)` displays live platform occupancy and approaching train delay pressure.

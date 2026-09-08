@@ -1,4 +1,4 @@
-# 🚂 RailETA — Deep ML Brutal Stress Test & Honest Architectural Review
+# 🚂 GaTi — Deep ML Brutal Stress Test & Honest Architectural Review
 
 > **Problem Statement 26028 (Ministry of Railways)**: *Dynamic Forecast of Expected Time of Arrival (ETA) for Coaching Trains on Indian Railways.*  
 > **Evaluation Dataset**: **164,564 genuine test holdout records** (September 27–30, 2024).  
@@ -173,7 +173,7 @@ An honest analysis of prediction residuals ($e_i = \hat{y}_i - y_i$) on the 164,
 | **P90 Absolute Error** | **13.955 min** | Captures moderate section queueing delays. |
 | **P99 Absolute Error** | **62.994 min** | Extreme multi-hour disruptions (engine failure, rail fracture). |
 
-> **Key Insight**: The median absolute error of RailETA is **1.964 minutes**. The headline MAE of 6.247 min is pulled upward entirely by the 1% extreme fat-tail disruptions ($P99 = 62.99$ min).
+> **Key Insight**: The median absolute error of GaTi is **1.964 minutes**. The headline MAE of 6.247 min is pulled upward entirely by the 1% extreme fat-tail disruptions ($P99 = 62.99$ min).
 
 ---
 
@@ -227,7 +227,7 @@ Without Machine Learning:
 - LightGBM provides the empirical probabilistic foundation that slashes passenger waiting error by **27.4% across the entire national network**.
 
 ### 3. The Winning Formula for SIH 2026
-RailETA succeeds because it respects the boundary between **empirical data** and **physical law**:
+GaTi succeeds because it respects the boundary between **empirical data** and **physical law**:
 - **ML is the Friction Engine**: Discovers latent queueing, cascading delays, and environmental drag from 1.28M real records.
 - **Rules are the Safety Cage**: Guarantees that ML predictions can never violate Indian Railways operating regulations.
 - **Kinematics is the Real-Time Correction**: Blends live GPS telemetry to provide sub-2-minute precision in the active block.

@@ -1,4 +1,4 @@
-# RailETA — External Feed Matrix & Production Integration Architecture
+# GaTi — External Feed Matrix & Production Integration Architecture
 
 This matrix details the mapping between the current prototype data sources and the production enterprise systems of Indian Railways (managed by CRIS — Centre for Railway Information Systems).
 
@@ -20,7 +20,7 @@ This matrix details the mapping between the current prototype data sources and t
 
 ## 2. Degraded Mode & Fault-Tolerance Principles
 
-RailETA is architected for zero single points of failure in live railway operations:
+GaTi is architected for zero single points of failure in live railway operations:
 
 1. **Weather Feed Disruption**:
    - If IMD/Open-Meteo APIs experience downtime or high latency (>100 ms), the feature pipeline replaces environmental inputs with neutral baseline flags (`is_foggy=0`, `precipitation=0.0`).
@@ -31,4 +31,4 @@ RailETA is architected for zero single points of failure in live railway operati
    - Ablation experiments demonstrate that the model operates within 0.037 minutes MAE of full capability when static topology density is utilized.
 
 3. **Live GPS / RTIS Loss**:
-   - In rural or non-electrified stretches where locomotive GPS transponders face satellite shadow, RailETA transitions smoothly to station-based discrete arrival/departure timestamps logged in COA, continuing trajectory accumulation from the last verified physical station halt.
+   - In rural or non-electrified stretches where locomotive GPS transponders face satellite shadow, GaTi transitions smoothly to station-based discrete arrival/departure timestamps logged in COA, continuing trajectory accumulation from the last verified physical station halt.

@@ -1,11 +1,11 @@
 version: '3.8'
 
 services:
-  raileta:
+  gati:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: raileta-engine
+    container_name: gati-engine
     ports:
       - "8000:8000"
     environment:

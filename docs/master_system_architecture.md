@@ -1,4 +1,4 @@
-# RailETA — Master System Architecture & Technical Specification
+# GaTi — Master System Architecture & Technical Specification
 
 > **Smart India Hackathon 2026 • Problem Statement 26028 (Ministry of Railways)**  
 > **Dynamic Forecast of Expected Time of Arrival (ETA) for Coaching Trains on Indian Railways**  
@@ -15,14 +15,14 @@ Indian Railways operates one of the world's most complex railway networks, runni
 4. Physical track constraints codified in Indian Railways General & Subsidiary Rules (G&SR).
 5. Real-time kinematic telemetry (live GPS speed and intra-block segment progression).
 
-**RailETA** is an end-to-end operational dynamic ETA prediction system built directly on **1,282,325 genuine Indian Railways train movement records** from September 2024. It combines:
+**GaTi** is an end-to-end operational dynamic ETA prediction system built directly on **1,282,325 genuine Indian Railways train movement records** from September 2024. It combines:
 - A **LightGBM gradient-boosted decision tree model** trained on 23 engineered features.
 - A **deterministic Railway Rule Engine** enforcing physical safety bounds and operational orders.
 - A **Post-ML Kinematic State Correction layer** dynamically blending live speed observations.
 - A **resilient Provider Abstraction** ingesting live third-party observations (RailRadar) with token-bucket rate limiting and zero-crash fallbacks.
 - A **continuous Self-Evaluation Loop** that records predictions and self-evaluates against observed arrivals in real time.
 
-Across the temporal holdout test set (164,564 unseen section runs), RailETA achieves a **Mean Absolute Error (MAE) of 6.247 minutes**, representing a **27.4% error reduction** over the schedule-naive baseline, while ensuring **100% compliance** with track Maximum Permissible Speed (MPS).
+Across the temporal holdout test set (164,564 unseen section runs), GaTi achieves a **Mean Absolute Error (MAE) of 6.247 minutes**, representing a **27.4% error reduction** over the schedule-naive baseline, while ensuring **100% compliance** with track Maximum Permissible Speed (MPS).
 
 ---
 
@@ -347,7 +347,7 @@ class CanonicalTrainState:
 
 ## 9. Real-Time Self-Evaluation Loop
 
-As outlined in §12 of the integration architecture, RailETA continuously self-evaluates without requiring offline batch analysis:
+As outlined in §12 of the integration architecture, GaTi continuously self-evaluates without requiring offline batch analysis:
 
 - **Source File**: [`src/engine/prediction_logger.py`](file:///d:/ETA/src/engine/prediction_logger.py).
 - **Architecture**: In-memory ring buffer tracking the last 150 predictions.
@@ -454,7 +454,7 @@ Open your browser at **`http://localhost:8000/`**.
 
 ## 14. Conclusion & SIH Presentation Defense
 
-When presenting RailETA to SIH 2026 evaluators:
+When presenting GaTi to SIH 2026 evaluators:
 1. **Zero Fake Data**: The entire system is trained on 1.28 million genuine Indian Railways records with real Open-Meteo ERA5 weather.
 2. **Empirical Superiority**: 27.4% MAE reduction over current NTES schedule-naive predictions, verified on an unseen holdout test set.
 3. **Safety Guarantee**: 100% compliance with physical track MPS, sacrificing 0.66 min of raw MAE to prevent unphysical speed recommendations.

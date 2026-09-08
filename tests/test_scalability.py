@@ -2,7 +2,7 @@
 test_scalability.py - National-Scale Multi-Train Concurrency & Scalability Load Suite.
 
 Smart India Hackathon 2026 (PS 26028) Proof of Scalability:
-Demonstrates that RailETA's hybrid architecture effortlessly handles 1,000 to 5,000
+Demonstrates that GaTi's hybrid architecture effortlessly handles 1,000 to 5,000
 concurrent active passenger & freight train movements across Indian Railways (IR runs ~13,000 trains daily).
 
 Measures:

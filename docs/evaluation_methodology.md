@@ -1,8 +1,8 @@
-# RailETA — Empirical Evaluation Methodology & Defense
+# GaTi — Empirical Evaluation Methodology & Defense
 
 ## 1. Evaluation Philosophy & Zero-Leakage Protocol
 
-RailETA models section running times ($t_{\text{actual}}$) and station arrival delays ($d_{\text{arrival}}$) across the Indian Railways Broad Gauge network. To provide defensible, judge-proof performance numbers, the evaluation protocol adheres strictly to real-world operational constraints:
+GaTi models section running times ($t_{\text{actual}}$) and station arrival delays ($d_{\text{arrival}}$) across the Indian Railways Broad Gauge network. To provide defensible, judge-proof performance numbers, the evaluation protocol adheres strictly to real-world operational constraints:
 
 1. **Strict Temporal Forward Split**:
    - **Training Set**: September 1 – September 22, 2024 (~935,000 section traversals)
@@ -22,7 +22,7 @@ RailETA models section running times ($t_{\text{actual}}$) and station arrival d
 
 ## 2. The Baseline Ladder
 
-To establish fair and rigorous benchmarks, RailETA evaluates against a multi-tier baseline ladder reflecting both operational practice and statistical baselines:
+To establish fair and rigorous benchmarks, GaTi evaluates against a multi-tier baseline ladder reflecting both operational practice and statistical baselines:
 
 | Baseline ID | Name | Operational Interpretation | Mathematical Formulation |
 |:---|:---|:---|:---|
@@ -31,8 +31,8 @@ To establish fair and rigorous benchmarks, RailETA evaluates against a multi-tie
 | **B2** | **Historical Section Median** | Typical operational running time observed historically for that specific track section. | $\hat{t}_{\text{sec}} = \text{median}(t_{\text{train\_split}})$<br>$\hat{d}_{\text{arr}} = d_{\text{dep}} + (\hat{t} - t_{\text{sched}})$ |
 | **B3** | **Ridge Linear Regression** | Linear multivariate baseline utilizing timetable, distance, live delay, and temporal features. | $\hat{t}_{\text{sec}} = \mathbf{w}^T \mathbf{x} + b$ (L2 regularized) |
 | **B4** | **LightGBM Ablations** | Feature-isolated gradient boosting models (excluding weather or excluding network topology). | Evaluates marginal value of external data sources. |
-| **B5** | **RailETA Main LightGBM** | 23-feature gradient boosted decision tree optimizing L1 loss (MAE). | Non-linear feature interactions across temporal, network, live delay, and ERA5 weather. |
-| **B6** | **RailETA + Deterministic Rule Engine** | Physics-bounded post-ML constraint layer enforcing track MPS, TSR physics, and timetable cushion limits. | $t_{\text{final}} = \text{Rules}(\hat{t}_{\text{ML}}, \text{track MPS}, \text{TSR}, \text{cushion})$ |
+| **B5** | **GaTi Main LightGBM** | 23-feature gradient boosted decision tree optimizing L1 loss (MAE). | Non-linear feature interactions across temporal, network, live delay, and ERA5 weather. |
+| **B6** | **GaTi + Deterministic Rule Engine** | Physics-bounded post-ML constraint layer enforcing track MPS, TSR physics, and timetable cushion limits. | $t_{\text{final}} = \text{Rules}(\hat{t}_{\text{ML}}, \text{track MPS}, \text{TSR}, \text{cushion})$ |
 
 ---
 
@@ -53,7 +53,7 @@ Because squared error metrics (MSE/RMSE) overly penalize non-recurring operation
 
 ## 4. Horizon Stratification (Hop Buckets)
 
-A single overall MAE obscures error growth over multi-station journeys. RailETA partitions the held-out test set into 5 forecast horizons:
+A single overall MAE obscures error growth over multi-station journeys. GaTi partitions the held-out test set into 5 forecast horizons:
 
 1. **1 Hop (Immediate Next Station)**: Critical for loop line precedence and junction approach dispatching.
 2. **2–3 Hops (Short Range, ~50–100 km)**: Block section conflict resolution.
@@ -61,26 +61,26 @@ A single overall MAE obscures error growth over multi-station journeys. RailETA 
 4. **6–10 Hops (Intermediate Range, ~300–600 km)**: Divisional handover punctuality.
 5. **11+ Hops (Long-Haul Destination)**: Passenger arrival ETA and long-distance rake turnaround.
 
-Results demonstrate that while naive schedule accumulation degrades rapidly over long horizons, RailETA maintains a disciplined error profile due to empirical median anchoring and live delay regression.
+Results demonstrate that while naive schedule accumulation degrades rapidly over long horizons, GaTi maintains a disciplined error profile due to empirical median anchoring and live delay regression.
 
 ---
 
 ## 5. Scenario Bucketing (Delay Severity)
 
-A common weakness of pure machine learning models is overfitting to the ~50% of trains running near on-time, resulting in catastrophic failure during heavy disruption. RailETA evaluates 4 operational delay regimes:
+A common weakness of pure machine learning models is overfitting to the ~50% of trains running near on-time, resulting in catastrophic failure during heavy disruption. GaTi evaluates 4 operational delay regimes:
 
 - **On-time / Nominal ($d_{\text{dep}} < 5 \text{ min}$)**: Normal traffic flow.
 - **Minor Delay ($5 \le d_{\text{dep}} < 30 \text{ min}$)**: Absorbed by section margins or moderate priority conflict.
 - **Severe Delay ($30 \le d_{\text{dep}} < 120 \text{ min}$)**: Major line congestion, overtaking by higher-priority trains.
 - **Extreme Delay ($d_{\text{dep}} \ge 120 \text{ min}$)**: Non-scheduled platforming, out-of-slot dispatching, knock-on congestion.
 
-In severe delay scenarios ($30\text{--}120\text{ min}$), Schedule Naive error escalates to over 12.9 minutes MAE, whereas RailETA restricts error to 7.6 minutes MAE (a 41% reduction in error).
+In severe delay scenarios ($30\text{--}120\text{ min}$), Schedule Naive error escalates to over 12.9 minutes MAE, whereas GaTi restricts error to 7.6 minutes MAE (a 41% reduction in error).
 
 ---
 
 ## 6. The ML vs. Physical Feasibility Trade-off
 
-A critical contribution of RailETA is demonstrating why **pure unconstrained ML is insufficient for railway deployment**:
+A critical contribution of GaTi is demonstrating why **pure unconstrained ML is insufficient for railway deployment**:
 
 - Unconstrained LightGBM optimizes purely for mathematical point loss (MAE) over the training distribution. In doing so, it occasionally predicts speeds exceeding track Maximum Permissible Speed (MPS) or unrealistically high recovery rates.
 - The **Deterministic Rule Engine** acts as an immutable safety and physical guardrail:

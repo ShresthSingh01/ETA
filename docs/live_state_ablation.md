@@ -1,4 +1,4 @@
-# RailETA — Live State Contribution & Feature Ablation Study
+# GaTi — Live State Contribution & Feature Ablation Study
 
 > **Target Problem Statement**: SIH 26028 (Live Telemetry & State Contribution)  
 > **Audited Dataset**: 164,564 holdout records (September 27–30, 2024)  

@@ -1,5 +1,5 @@
 """
-test_throughput.py - Performance, latency, and throughput verification for RailETA.
+test_throughput.py - Performance, latency, and throughput verification for GaTi.
 
 Demonstrates real-time feasibility for Indian Railways national scale:
 - Evaluates per-section prediction latency

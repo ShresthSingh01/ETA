@@ -26,7 +26,7 @@ from src.integrations.base import CanonicalTrainState, FreshnessLevel
 
 def run_live_smoke_test(api_key: str = None, train_id: str = "12303") -> bool:
     print("=" * 70)
-    print("RAILETA: RAILRADAR LIVE TELEMETRY INTEGRATION SMOKE TEST")
+    print("GATI: RAILRADAR LIVE TELEMETRY INTEGRATION SMOKE TEST")
     print("=" * 70)
 
     resolved_key = api_key or os.environ.get("RAILRADAR_API_KEY", "")

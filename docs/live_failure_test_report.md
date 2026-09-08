@@ -1,4 +1,4 @@
-# RailETA — Live Adapter Failure Matrix Test Report
+# GaTi — Live Adapter Failure Matrix Test Report
 
 > **Audited Test Suite**: [`tests/test_live_integration.py::test_railradar_http_failure_matrix`](file:///d:/ETA/tests/test_live_integration.py)  
 > **Status**: ALL TESTS PASSING (12/12)  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-This report documents the exhaustive verification of the RailETA Live Adapter (`RailRadarProvider`) across all standard HTTP failure codes, network transport disruptions, and malformed payload scenarios.
+This report documents the exhaustive verification of the GaTi Live Adapter (`RailRadarProvider`) across all standard HTTP failure codes, network transport disruptions, and malformed payload scenarios.
 
 The primary objective is to prove that **on zero failure paths does the system crash, hang, or fabricate synthetic telemetry.**
 
@@ -52,5 +52,5 @@ tests/test_live_integration.py::test_railradar_live_freshness_lifecycle PASSED [
 ## 4. Key Takeaways for Evaluators
 
 1. **No Silent Failures**: All network exceptions are explicitly captured in `CanonicalTrainState.exceptions` and exposed through `/api/live/health`.
-2. **Deterministic Fallback**: When live feeds drop, RailETA cleanly falls back to the static LightGBM timetable model without fabricating GPS coordinates.
+2. **Deterministic Fallback**: When live feeds drop, GaTi cleanly falls back to the static LightGBM timetable model without fabricating GPS coordinates.
 3. **Judge Defense Ready**: If a judge asks *"What happens if RailRadar goes down during a demonstration?"*, the system transparently indicates `● UNAVAILABLE` with zero hallucinated movement, maintaining 100% scientific honesty.

@@ -1,4 +1,4 @@
-# RailETA — Live Telemetry Freshness Policy & Invariant Specification
+# GaTi — Live Telemetry Freshness Policy & Invariant Specification
 
 > **Document Version**: 1.0.0  
 > **Status**: APPROVED & AUDITED  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary & Core Invariant
 
-The integrity of the RailETA system rests on a strict **Zero-Synthetic Telemetry Policy** in live operating mode. Under no circumstances does the engine fabricate coordinates, fake moving train delays, or extrapolate unverified physical positions when operating in `LIVE` mode.
+The integrity of the GaTi system rests on a strict **Zero-Synthetic Telemetry Policy** in live operating mode. Under no circumstances does the engine fabricate coordinates, fake moving train delays, or extrapolate unverified physical positions when operating in `LIVE` mode.
 
 ### The Immutable Mode Invariant
 
@@ -25,7 +25,7 @@ The integrity of the RailETA system rests on a strict **Zero-Synthetic Telemetry
 
 Every telemetry packet received from an external observation provider contains two critical timestamps:
 1. `source_timestamp`: The UTC instant recorded by the locomotive GPS / signaling transponder.
-2. `received_timestamp`: The UTC instant recorded by RailETA ingest gateway.
+2. `received_timestamp`: The UTC instant recorded by GaTi ingest gateway.
 
 $$\text{Data Age} = t_{\text{received}} - t_{\text{source}}$$
 
@@ -68,7 +68,7 @@ stateDiagram-v2
 
 ## 3. Auditing & Compliance Assertions
 
-Every prediction emitted by RailETA includes an audit payload:
+Every prediction emitted by GaTi includes an audit payload:
 ```json
 {
   "provider": "RailRadarLiveProvider",

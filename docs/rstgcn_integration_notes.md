@@ -1,4 +1,4 @@
-# RailETA — Final Research Paper Integration Notes
+# GaTi — Final Research Paper Integration Notes
 ## RSTGCN: Railway-centric Spatio-Temporal Graph Convolutional Network for Train Delay Prediction
 
 ---
@@ -9,15 +9,15 @@ This document captures the important ideas, evidence, limitations, and practical
 
 > “RSTGCN: Railway-centric Spatio-Temporal Graph Convolutional Network for Train Delay Prediction”
 
-The goal is **not** to copy the paper blindly or replace RailETA with RSTGCN.
+The goal is **not** to copy the paper blindly or replace GaTi with RSTGCN.
 
 The goal is:
 
-> **Use the paper's network-delay insight to strengthen RailETA's existing network representation without unnecessary complexity or unsupported claims.**
+> **Use the paper's network-delay insight to strengthen GaTi's existing network representation without unnecessary complexity or unsupported claims.**
 
 Final recommendation:
 
-> **Upgrade RailETA from basic/static network features toward a dynamic, train-relative downstream network state. Keep the current individual-train section-time LightGBM as the core model. Only introduce a full graph model if controlled experiments prove that it is necessary.**
+> **Upgrade GaTi from basic/static network features toward a dynamic, train-relative downstream network state. Keep the current individual-train section-time LightGBM as the core model. Only introduce a full graph model if controlled experiments prove that it is necessary.**
 
 ---
 
@@ -59,10 +59,10 @@ RSTGCN
 Future station-average delay
 ```
 
-RailETA instead solves:
+GaTi instead solves:
 
 ```text
-RAILETA
+GATI
 
 Individual train
       ↓
@@ -79,7 +79,7 @@ These problems are related, but they have different targets.
 
 ---
 
-# 4. Why the paper is relevant to RailETA
+# 4. Why the paper is relevant to GaTi
 
 The paper provides evidence for an important idea:
 
@@ -170,7 +170,7 @@ The underlying idea is:
 
 > Railway traffic and delays contain recurring temporal patterns.
 
-This can be adapted to RailETA without adopting the full RSTGCN architecture.
+This can be adapted to GaTi without adopting the full RSTGCN architecture.
 
 ---
 
@@ -198,7 +198,7 @@ future conditions at C/D may be affected
 
 The exact propagation is not guaranteed, but the network contains predictive information.
 
-This is the strongest reason to strengthen RailETA's network layer.
+This is the strongest reason to strengthen GaTi's network layer.
 
 ---
 
@@ -220,7 +220,7 @@ railway-specific features
 
 and forecasts future station-level average delays.
 
-It is substantially more complex than the current RailETA LightGBM approach.
+It is substantially more complex than the current GaTi LightGBM approach.
 
 ---
 
@@ -244,7 +244,7 @@ This supports:
 }
 \]
 
-But it does **not** establish that the same percentage improvement will occur in RailETA.
+But it does **not** establish that the same percentage improvement will occur in GaTi.
 
 ---
 
@@ -252,7 +252,7 @@ But it does **not** establish that the same percentage improvement will occur in
 
 Do not claim:
 
-> “The paper proves RailETA's ETA accuracy.”
+> “The paper proves GaTi's ETA accuracy.”
 
 It does not.
 
@@ -264,7 +264,7 @@ It does not.
 
 Do not claim:
 
-> “RailETA must use an RSTGCN.”
+> “GaTi must use an RSTGCN.”
 
 The paper does not establish that.
 
@@ -280,11 +280,11 @@ The defensible statement is:
 
 ---
 
-# 11. RailETA already has a network layer
+# 11. GaTi already has a network layer
 
 This is important.
 
-RailETA already includes:
+GaTi already includes:
 
 ```text
 railway topology
@@ -438,13 +438,13 @@ Do not add dozens of features before measuring whether the small set helps.
 
 ---
 
-# 15. Why train-relative network context is better for RailETA
+# 15. Why train-relative network context is better for GaTi
 
 The paper asks:
 
 > What will be the average delay at station C?
 
-RailETA asks:
+GaTi asks:
 
 > What will Train 12919 experience when it reaches C?
 
@@ -586,7 +586,7 @@ This may be more useful than simply adding a headway column.
 
 # 20. Your existing headway experiment is important
 
-RailETA already performed a controlled headway test:
+GaTi already performed a controlled headway test:
 
 ```text
 Production model:
@@ -626,7 +626,7 @@ T_i=f(X_i,N_i)
 
 where:
 
-- \(X_i\) = existing RailETA features
+- \(X_i\) = existing GaTi features
 - \(N_i\) = dynamic downstream network state
 
 Conceptually:
@@ -653,7 +653,7 @@ This keeps the existing model architecture intact.
 
 # 22. Why we should NOT replace LightGBM immediately
 
-RailETA's target is:
+GaTi's target is:
 
 ```text
 individual-train sectional travel time
@@ -944,7 +944,7 @@ The improvement is therefore primarily in **representation**, not in adding a fa
 
 A concise defensible statement:
 
-> **“Recent Indian Railway research shows that railway delays exhibit spatial and temporal dependencies. Inspired by that finding, RailETA represents the evolving state of the network ahead of a train using downstream train activity, delays and temporal trends, while keeping our individual-train sectional ETA model. We validate these additions experimentally rather than assuming that a graph model will automatically improve ETA.”**
+> **“Recent Indian Railway research shows that railway delays exhibit spatial and temporal dependencies. Inspired by that finding, GaTi represents the evolving state of the network ahead of a train using downstream train activity, delays and temporal trends, while keeping our individual-train sectional ETA model. We validate these additions experimentally rather than assuming that a graph model will automatically improve ETA.”**
 
 ---
 
@@ -998,14 +998,15 @@ The RSTGCN paper is valuable because it gives a strong, domain-specific basis fo
 }
 \]
 
-RailETA already has a network layer, so we do **not** need to build another network system.
+GaTi already has a network layer, so we do **not** need to build another network system.
 
 We should strengthen what already exists:
 
 \[
 oxed{
 	ext{Basic Network Features}
-ightarrow
+
+ightarrow
 	ext{Dynamic Downstream Network State}
 }
 \]
@@ -1034,12 +1035,13 @@ Then:
 	ext{Downstream Network State}
 +
 	ext{Operational Constraints}
-ightarrow
+
+ightarrow
 	ext{Dynamic Individual-Train ETA}
 }
 \]
 
-This is the strongest way to use the paper in RailETA because it is:
+This is the strongest way to use the paper in GaTi because it is:
 
 - scientifically motivated,
 - aligned with the actual PS,

@@ -28,7 +28,7 @@ from src.engine.prediction_logger import LivePredictionLogger
 
 def run_live_loop_demonstration(train_number: int = 12303, date: str = "2024-09-28", delay_sec: float = 0.15):
     print("=" * 88)
-    print(" [TRAIN] RailETA: Dynamic ETA Prediction System for Indian Railways")
+    print(" [TRAIN] GaTi: Dynamic ETA Prediction System for Indian Railways")
     print("         Smart India Hackathon 2026 • Problem Statement 26028 (Ministry of Railways)")
     print("         CLOSED-LOOP LIVE TELEMETRY & DYNAMIC NETWORK PROPAGATION DEMONSTRATION")
     print("=" * 88)
@@ -159,7 +159,7 @@ def run_live_loop_demonstration(train_number: int = 12303, date: str = "2024-09-
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Demonstrate RailETA Closed-Loop Telemetry & ETA Updates")
+    parser = argparse.ArgumentParser(description="Demonstrate GaTi Closed-Loop Telemetry & ETA Updates")
     parser.add_argument("--train", type=int, default=12303, help="Train Number (default: 12303)")
     parser.add_argument("--date", type=str, default="2024-09-28", help="Journey Date (default: 2024-09-28)")
     parser.add_argument("--delay", type=float, default=0.08, help="Delay between stops in seconds for demo pace")

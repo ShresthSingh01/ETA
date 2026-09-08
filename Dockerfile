@@ -1,4 +1,4 @@
-# RailETA - SIH 26028 Production Container
+# GaTi - SIH 26028 Production Container
 FROM python:3.11-slim
 
 WORKDIR /app

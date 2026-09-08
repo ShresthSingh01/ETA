@@ -1,4 +1,4 @@
-# RailETA — Dual-Target Ablation Waterfall Benchmark Report
+# GaTi — Dual-Target Ablation Waterfall Benchmark Report
 
 > **Dataset**: 164,564 holdout test movement records (September 27–30, 2024).  
 > **Evaluation Protocol**: Strict chronological holdout; zero forward leakage; 100% genuine NTES movement records.  

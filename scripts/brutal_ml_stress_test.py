@@ -369,7 +369,7 @@ def run_test_7_latency_and_footprint(booster: lgb.Booster, test_df: pd.DataFrame
 def execute_brutal_ml_suite() -> Dict[str, Any]:
     """Orchestrates all 7 tests and compiles the audit dossier."""
     print("=" * 80)
-    print("RAIL-ETA SIH 26028 -- DEEP ML BRUTAL STRESS TEST & DIAGNOSTIC AUDIT")
+    print("GATI SIH 26028 -- DEEP ML BRUTAL STRESS TEST & DIAGNOSTIC AUDIT")
     print("=" * 80)
 
     # 1. Load Data and Booster

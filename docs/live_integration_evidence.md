@@ -1,4 +1,4 @@
-# RailETA — Live Integration Evidence & End-to-End Audit Trail
+# GaTi — Live Integration Evidence & End-to-End Audit Trail
 
 > **Target Problem Statement**: SIH 26028 (Real Telemetry Integration)  
 > **Traceability Component**: `src/integrations/railradar.py` $\rightarrow$ `src/engine/state_correction.py` $\rightarrow$ `src/engine/eta_calculator.py`  
