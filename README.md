@@ -2,404 +2,372 @@
   <img src="./Logo.png" alt="GaTi Indian Railways Dynamic ETA System" width="170">
 </p>
 
-<h1 align="center">GaTi: Dynamic ETA Prediction for Indian Railways</h1>
+<h1 align="center">GaTi: A Clearer ETA for Indian Railways</h1>
 
 <p align="center">
-  A station-by-station arrival forecast that combines historical operations, weather,
-  downstream network pressure, live kinematics, and deterministic railway constraints.
+  GaTi estimates when a train will reach each upcoming station.
+  It uses the train's history, its current condition, the track ahead,
+  weather, and railway operating limits.
 </p>
 
 <p align="center">
-  <a href="#measured-results"><img alt="Test MAE 6.251 min" src="https://img.shields.io/badge/Test_MAE-6.251_min-brightgreen"></a>
-  <a href="#measured-results"><img alt="Within 5 minutes 71.85 percent" src="https://img.shields.io/badge/Within_%C2%B15_min-71.85%25-blue"></a>
-  <a href="#quickstart"><img alt="FastAPI" src="https://img.shields.io/badge/API-FastAPI-009688"></a>
-  <a href="#verification"><img alt="Pytest" src="https://img.shields.io/badge/Tests-pytest-0A9EDC"></a>
+  <a href="#results-in-simple-words"><img alt="Test MAE 6.251 minutes" src="https://img.shields.io/badge/Test_error-6.251_minutes-brightgreen"></a>
+  <a href="#results-in-simple-words"><img alt="71.85 percent within 5 minutes" src="https://img.shields.io/badge/Within_5_minutes-71.85%25-blue"></a>
+  <a href="#start-here"><img alt="FastAPI" src="https://img.shields.io/badge/API-FastAPI-009688"></a>
+  <a href="#check-that-it-works"><img alt="Pytest" src="https://img.shields.io/badge/Tests-pytest-0A9EDC"></a>
 </p>
 
-GaTi is an operational ETA engine for coaching trains. It predicts the time to every
-remaining station on a route, explains why each prediction changed, and exposes the
-result through a FastAPI service and a browser dashboard.
+## What is GaTi?
 
-> **Status:** research and demonstration system. The included model, replay data, and
-> external provider adapter are suitable for evaluation and integration experiments;
-> they are not a safety-certified railway signalling system.
+GaTi is a train arrival-time prediction system. Give it a train's current station,
+current delay, route, weather, and information about trains farther ahead. It returns:
 
-## Contents
+- an expected arrival time for every upcoming station;
+- the expected delay at every station;
+- a confidence score that becomes lower farther into the future or when information is old;
+- a plain explanation when a rule, speed restriction, stop, weather condition, or crowding changes the result.
 
-- [At a glance](#at-a-glance)
-- [Why this problem needs more than delay propagation](#why-this-problem-needs-more-than-delay-propagation)
-- [System architecture](#system-architecture)
-- [How one ETA is produced](#how-one-eta-is-produced)
-- [Mathematical model](#mathematical-model)
-- [Data and leakage controls](#data-and-leakage-controls)
-- [Features and model tiers](#features-and-model-tiers)
-- [Live mode and replay mode](#live-mode-and-replay-mode)
-- [Operational rules and what-if events](#operational-rules-and-what-if-events)
-- [Measured results](#measured-results)
-- [API guide](#api-guide)
-- [Dashboard](#dashboard)
-- [Quickstart](#quickstart)
-- [Verification](#verification)
-- [Repository map](#repository-map)
-- [Limitations and responsible use](#limitations-and-responsible-use)
+The name **GaTi** means movement or speed. The project is a research and demonstration
+system. It is not a certified signalling system and must not replace an authorised
+railway controller, signal, or emergency procedure.
 
-## At a glance
+## Start here
 
-| Question | GaTi's answer |
-| --- | --- |
-| What is predicted? | Running time for each remaining station-to-station section, then cumulative station arrival and departure ETAs. |
-| What is the model? | LightGBM regression with L1/MAE loss. The production path uses 34 features: 22 numeric base features, 11 downstream-state features, and the categorical railway zone. |
-| What makes it dynamic? | The current delay, current section progress, live speed, telemetry freshness, downstream station pressure, weather, and injected operational events are evaluated at request time. |
-| What makes it explainable? | Every physical or operational adjustment is returned as an audit entry with its original time, final time, delta, reason, classification, and source document. |
-| What happens if live data fails? | The provider abstraction falls back to replay/archive state instead of allowing the prediction request to crash. |
-| What does the project include? | A Python inference engine, FastAPI API, replay simulator, RailRadar adapter, evaluation artifacts, tests, and a zero-framework Leaflet dashboard. |
+### The problem in one example
 
-### The core idea
+Imagine this situation:
+
+- Train A leaves Station A **20 minutes late**.
+- Station B is quiet, so Train A can recover some time.
+- Station C is crowded because other trains are waiting there.
+- A temporary speed restriction slows the track between B and C.
+
+A simple system would add 20 minutes to every later station. That gives the same answer
+whether Station C is empty or blocked. GaTi gives a different answer for each section:
 
 ```mermaid
 flowchart LR
-    A[Observed train state] --> B[Feature construction]
-    H[Historical section data] --> B
-    W[Weather observations] --> B
-    N[Downstream network grid] --> B
-    B --> C[LightGBM section-time prediction]
-    C --> D[Live kinematic correction]
-    D --> E[Deterministic railway rules]
-    E --> F[Forward station trajectory]
-    F --> G[ETA, confidence, explanation]
-    G --> I[FastAPI and dashboard]
-    G --> J[Prediction log and evaluation]
+    A[Station A<br/>Train leaves 20 min late] --> B[Section A to B<br/>Quiet track<br/>Some time recovered]
+    B --> C[Station B<br/>Delay is updated]
+    C --> D[Section B to C<br/>Speed restriction and crowding]
+    D --> E[Station C<br/>Delay increases again]
 ```
 
-## Why this problem needs more than delay propagation
+The important idea is simple: **the answer is rebuilt section by section**. The system
+does not copy the first delay all the way to the destination.
 
-A static delay rule says:
-
-$$
-\hat d_{k+1}=d_k
-$$
-
-That is simple, but it cannot represent recovery time, a crowded junction, a caution
-order, or a train that has stopped between stations. GaTi instead predicts the next
-section and then advances the forecast one section at a time:
-
-$$
-\hat t_{k}=f_\theta(x_k), \qquad
-\hat A_{k}=\hat A_{k-1}+\hat t_{k}, \qquad
-\hat d_{k}=\hat A_k-A^{schedule}_k
-$$
-
-Here, $x_k$ is the information available when section $k$ begins. Future observations
-are not allowed into $x_k$; they are used only after the train reaches that station for
-post-hoc evaluation.
-
-The design addresses four concrete failure modes:
-
-1. **Delay persistence is too rigid.** A train can recover a bounded amount of time on a clear section or lose time in congestion.
-2. **A train is not independent of its corridor.** Delayed trains and occupied platforms at a downstream junction affect the next train approaching it.
-3. **Unconstrained ML can predict impossible speeds.** A short predicted time is clamped to the time required by the section's maximum permissible speed.
-4. **A live position is different from a timetable position.** Speed and progress are blended only for the immediate active section, with freshness-aware weights.
-
-## System architecture
-
-```mermaid
-flowchart TB
-    subgraph Inputs[Inputs]
-        R[Historical replay provider]
-        L[RailRadar provider]
-        D[Processed section runs]
-        Y[Weather data]
-        E[Operational events]
-    end
-
-    subgraph Normalize[Provider boundary]
-        P[TrainStateProvider]
-        S[CanonicalTrainState]
-    end
-
-    subgraph Predict[Prediction engine]
-        F[34-feature vectorization]
-        M[LightGBM section model]
-        K[Four-state kinematic correction]
-        Q[Downstream network state engine]
-        G[Railway rule engine]
-        T[Trajectory accumulator]
-    end
-
-    subgraph Serve[Serving and evidence]
-        API[FastAPI]
-        UI[Leaflet dashboard]
-        J[JSONL prediction log]
-        B[Benchmark artifacts]
-    end
-
-    R --> P
-    L --> P
-    P --> S
-    D --> F
-    Y --> F
-    S --> F
-    S --> K
-    Q --> F
-    E --> G
-    F --> M --> K --> G --> T
-    Q --> T
-    T --> API
-    API --> UI
-    T --> J
-    B --> API
-```
-
-### Component responsibilities
-
-| Component | Location | Responsibility | Why it exists |
-| --- | --- | --- | --- |
-| Data preparation | `src/data/` | Cleans station and edge data, builds section runs, and joins weather. | Keeps training data reproducible and separates raw data from inference. |
-| Feature builder | `src/model/features.py` | Defines base features, M0-M3 network tiers, and the target. | Prevents training and inference from silently using different columns. |
-| LightGBM model | `models/lightgbm_eta.txt` | Predicts one section's running time. | Fast CPU inference on structured railway data. |
-| Network state engine | `src/engine/network_state.py` | Looks one, two, and three hops downstream and computes rolling delay signals. | Makes corridor pressure visible before it becomes the current train's delay. |
-| Kinematic correction | `src/engine/state_correction.py` | Classifies motion and blends speed/progress with the active-section ML estimate. | Uses live evidence without retraining the model for every observation. |
-| Rule engine | `src/engine/rule_engine.py` | Applies physical floors, event delays, recovery limits, validation, and provenance. | Keeps predictions physically interpretable and auditable. |
-| ETA calculator | `src/engine/eta_calculator.py` | Builds the section feature matrix and accumulates station ETAs. | Owns the end-to-end prediction path. |
-| Providers | `src/integrations/` | Normalizes replay and external observations to `CanonicalTrainState`. | Isolates upstream API changes from the prediction engine. |
-| Replay simulator | `src/replay/` | Replays holdout journeys one station step at a time. | Gives deterministic demos and closed-loop evaluation without a live feed. |
-| FastAPI service | `src/api/main.py` | Serves state, predictions, events, metrics, and benchmarks. | Provides a stable integration surface for UI and clients. |
-| Dashboard | `frontend/` | Displays map state, forward ETAs, alerts, telemetry, and scenarios. | Makes the model useful to an operator rather than only a Python caller. |
-
-## How one ETA is produced
-
-For a train at station $S_0$ with remaining sections $S_0\rightarrow S_1\rightarrow\dots\rightarrow S_n$:
-
-1. Normalize the current observation into `CanonicalTrainState`.
-2. Build one feature row per remaining section.
-3. Query the station-hour grid at a lagged hour, never the future hour.
-4. Predict each section time with LightGBM.
-5. Correct the immediate section using motion state, speed, progress, and freshness.
-6. Apply physical and operational rules.
-7. Add the final section time to the running clock.
-8. Compute arrival delay, departure delay, confidence, and explanation.
-9. Log forward predictions as pending; evaluate them when replay/live arrival is observed.
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant API
-    participant Provider
-    participant ETA as ETACalculator
-    participant Model as LightGBM
-    participant Rules as RuleEngine
-    participant Log as PredictionLogger
-
-    Client->>API: GET /api/replay/state
-    API->>Provider: Read normalized train state
-    Provider-->>API: CanonicalTrainState
-    API->>ETA: Predict remaining trajectory
-    ETA->>Model: Predict section times
-    Model-->>ETA: ML section times
-    ETA->>Rules: Bound and adjust each section
-    Rules-->>ETA: Final time plus audit trail
-    ETA-->>API: ETAs, confidence, explanations
-    API->>Log: Store pending predictions
-    API-->>Client: JSON response
-    Client->>API: POST /api/replay/step
-    API->>Log: Match observed arrival to prediction
-    Log-->>API: Error and rolling metrics
-```
-
-## Mathematical model
-
-### Section time and ETA accumulation
-
-The model predicts traversal time in minutes:
-
-$$
-\hat t^{ML}_k=f_\theta(x_k)
-$$
-
-The accumulator then uses the rule-adjusted time $\hat t_k$:
-
-$$
-\hat A_k=\hat A_{k-1}+\hat t_k
-$$
-
-and compares the result with the scheduled arrival $A^{sch}_k$:
-
-$$
-\hat d_k=\hat A_k-A^{sch}_k
-$$
-
-### Physical minimum-time floor
-
-For distance $d_k$ in kilometres and maximum permissible speed $v^{MPS}_k$:
-
-$$
- t^{MPS}_k=60\frac{d_k}{v^{MPS}_k}
-$$
-
-The implementation uses the strongest of the physical floor, a historical floor, and
-one minute:
-
-$$
- t^{floor}_k=\max\left(t^{MPS}_k,\ 0.95\,t^{min-history}_k,\ 1\right)
-$$
-
-Therefore $\hat t_k\ge t^{floor}_k$ after the bound stage.
-
-**Worked example:** a 25 km section with a 100 km/h MPS cannot be traversed in 10
-minutes. The physical minimum is $60(25/100)=15$ minutes, so the rule engine returns
-at least 15 minutes and records a `MINIMUM_PHYSICAL_RUNNING_TIME` adjustment.
-
-### Temporary speed restriction
-
-For an affected length $d_a$, normal speed $v_n$, and restricted speed $v_r$:
-
-$$
-\Delta t_{TSR}=60d_a\left(\frac{1}{v_r}-\frac{1}{v_n}\right)
-$$
-
-The engine adds this derived delay to the current section and records the event source.
-For 15 km at 30 km/h instead of 100 km/h, the delay is
-$60(15)(1/30-1/100)=21$ minutes.
-
-### Recovery cap
-
-When the train is already late, the model cannot recover more than the configured
-working-time-table allowance:
-
-$$
- t^{recovery-floor}_k=t^{sch}_k(1-r),\qquad r=0.15
-$$
-
-This is an engineering/timetable heuristic in this project, not a claim that the 15%
-value is itself a statutory G&SR rule. The audit metadata distinguishes official rules,
-operational sources, derived physics, and model assumptions.
-
-### Live kinematic correction
-
-For section distance $d$, progress $p$, and observed speed $v$:
-
-$$
- d_{rem}=d(1-p),\qquad t_{kin}=60\frac{d_{rem}}{v}
-$$
-
-For a fresh moving observation, the implementation uses:
-
-$$
- t^{blend}=0.70\,t^{ML}_{rem}+0.30\,t_{kin}
-$$
-
-An aging observation uses an 85/15 blend. Slow movement, an expected station halt,
-an unexpected mid-section stop, and stale telemetry follow separate conservative paths.
-
-### Confidence score
-
-The displayed confidence is a bounded operational score, not a calibrated probability:
-
-$$
- C=\operatorname{clip}\left(95-1.5h-5w-p+d+q,\ 25,\ 98\right)
-$$
-
-where $h$ is downstream hop index, $w$ is an adverse-weather indicator, $p$ is the
-network-pressure penalty, $d$ is a train-density bonus, and $q$ is the telemetry
-freshness/position adjustment. The response also exposes `HIGH`, `MEDIUM`, or `LOW`.
-
-## Data and leakage controls
-
-### Data lineage
-
-| Asset | Purpose |
-| --- | --- |
-| `Indian-Railway-Network-and-Delays/train_routes_delays_Sep2024.csv` | Raw September 2024 movement records. |
-| `data/cleaned/stations_cleaned.csv` | Clean station records and coordinates. |
-| `data/cleaned/edges_cleaned.csv` | Clean station-to-station network edges. |
-| `data/processed/section_runs_weather.parquet` | Final section-level training and evaluation corpus. |
-| `data/processed/station_network_grid.npz` | Dense station-hour delay/count grid used for downstream lookups. |
-| `models/lightgbm_eta.txt` | Trained production booster loaded by `ETACalculator`. |
-
-The expected temporal split is:
-
-$$
-\text{Train: Sep 1--22}\rightarrow\text{Validation: Sep 23--26}\rightarrow\text{Test: Sep 27--30, 2024}
-$$
-
-Historical section statistics are computed from training rows and looked up by section
-for validation and test. An unseen section falls back to its scheduled time. The
-network engine queries station state at $H-1$ and computes rolling values from prior
-hours; this is why future station congestion cannot leak into a forecast.
-
-The leakage contract is tested in [tests/test_no_leakage.py](tests/test_no_leakage.py).
-
-## Features and model tiers
-
-The base vector contains 22 numeric features plus the categorical `zone` feature:
-
-| Group | Features |
-| --- | --- |
-| Kinematic and schedule | `scheduled_section_time`, `distance_km`, `dep_delay_from`, `arr_delay_from`, `scheduled_dwell_from` |
-| Historical, leak-free | `section_median_time`, `section_mean_time`, `section_p90_time`, `section_min_time`, `section_std_time` |
-| Traffic and calendar | `edge_ntrains`, `hour_of_day`, `day_of_week`, `is_weekend`, `day_of_month` |
-| Weather | `temperature_2m`, `precipitation`, `weather_code`, `wind_speed_10m`, `visibility`, `is_foggy`, `is_heavy_rain` |
-| Categorical | `zone` |
-
-The ablation ladder adds downstream state progressively:
-
-| Tier | Feature count | Added information |
-| --- | ---: | --- |
-| M0 | 23 | Base features and zone. |
-| M1 | 27 | One-hop mean delay, delayed count, active count, weighted downstream delay. |
-| M2 | 31 | Two-hop and three-hop delay plus downstream spatial trend. |
-| M3 | 34 | Recent mean, six-hour rolling mean, and two-hour station trend. |
-
-The production inference path requests M3 with `get_feature_names(model_tier="M3")`.
-
-## Live mode and replay mode
-
-Both modes use the same canonical schema, so the ETA engine does not need to know where
-an observation came from.
-
-```mermaid
-flowchart LR
-    A[ReplayProvider<br/>verified journey state] --> C[CanonicalTrainState]
-    B[RailRadarProvider<br/>external live state] --> C
-    C --> D{Mode}
-    D -->|historical_replay| E[Deterministic station stepping]
-    D -->|live_external| F[Freshness and provider health]
-    E --> G[Same ETA pipeline]
-    F --> G
-```
-
-`CanonicalTrainState` includes train identity, station sequence, segment progress,
-speed, bearing, delay, coordinates, source freshness, and whether the position is
-actual or extrapolated.
-
-Freshness levels are:
-
-| Level | Age | Effect |
-| --- | --- | --- |
-| `FRESH` | 0-60 seconds | Strongest live-speed blend. |
-| `AGING` | 61-180 seconds | Reduced live-speed weight. |
-| `STALE` | More than 180 seconds | Conservative remaining-distance handling. |
-| `UNKNOWN` | Invalid or unavailable age | No freshness confidence benefit. |
-
-## Operational rules and what-if events
-
-The rule engine runs in this order:
+## What the system does, step by step
 
 ```mermaid
 flowchart TD
-    A[ML section time] --> B[BOUND\nMPS floor and outlier ceiling]
-    B --> C[ADJUST\nrecovery cap]
-    C --> D[ADJUST\nTSR, caution, block, stop, signal hold]
-    D --> E[VALIDATE\nphysical sanity]
-    E --> F[EXPLAIN\naudit trail and provenance]
+    A[1. Read the train state] --> B[2. Look at the next track sections]
+    B --> C[3. Estimate each section time]
+    C --> D[4. Check speed, events, and railway limits]
+    D --> E[5. Add the section times together]
+    E --> F[6. Show ETAs, reasons, and confidence]
+    F --> G[7. Compare predictions with actual arrivals]
 ```
 
-Supported event types include `SPEED_RESTRICTION`, `CAUTION_ORDER`,
-`MAINTENANCE_BLOCK`, `UNSCHEDULED_STOP`, `SIGNAL_HOLD`, `CANCELLATION`,
-`DIVERSION`, and `RESCHEDULE`. The public request model currently documents the
-first four; the engine registry contains the additional operational types.
+### Step 1: Read the train state
 
-Example event injection:
+GaTi can use either a saved journey replay or an external live feed. It reads things
+such as:
+
+- train number and journey date;
+- current station and next station;
+- current delay;
+- speed and progress between two stations;
+- latitude and longitude when available;
+- when the observation was received;
+- whether the position is confirmed or estimated.
+
+All sources are changed into the same small record before prediction. This means the
+prediction code does not need separate logic for replay data and live data.
+
+### Step 2: Look ahead
+
+A train is affected by what is happening farther down the line. GaTi checks the next
+one, two, and three stations and asks:
+
+- How late are trains at the next station?
+- How many trains are there?
+- Is the delay getting worse or better?
+- What was the average delay during the last few hours?
+
+This is similar to checking traffic ahead before driving into a busy town. Trains
+cannot simply steer around a blocked platform, so this information matters.
+
+### Step 3: Estimate each section
+
+A **section** means the track between two consecutive stations. For example:
+
+```text
+New Delhi -> Ghaziabad -> Aligarh -> Kanpur
+             section 1     section 2    section 3
+```
+
+The trained model estimates the running time of each section. It learns from timetable
+records, actual running times, distance, delays, weather, traffic, and railway zone.
+It predicts time in minutes, not a final destination time in one giant guess.
+
+### Step 4: Check the answer
+
+The model is good at finding patterns, but it does not understand railway safety by
+itself. GaTi checks every answer before showing it:
+
+- it will not predict a speed above the section's maximum allowed speed;
+- it limits unrealistic time recovery;
+- it adds the effect of a caution order or temporary speed restriction;
+- it adds a maintenance hold, signal hold, or unscheduled stop;
+- it records what changed and why.
+
+### Step 5: Add the times
+
+If the train has 12 minutes left on the next section and 18 minutes on the following
+section, the second station is predicted roughly 30 minutes from now, plus any planned
+dwell time. The calculation continues until the destination.
+
+### Step 6: Show the result
+
+The API and dashboard show a station table like this:
+
+| Station | Scheduled arrival | GaTi arrival | Predicted delay | Confidence | Explanation |
+| --- | --- | --- | ---: | ---: | --- |
+| Station B | 10:20 | 10:24 | +4 min | High | Normal section running |
+| Station C | 10:55 | 11:08 | +13 min | High | Downstream crowding |
+| Station D | 11:30 | 11:48 | +18 min | Medium | 30 km/h caution order |
+
+The exact values depend on the selected replay journey or live observation.
+
+## The complete picture
+
+```mermaid
+flowchart TB
+    subgraph Information[Information used by GaTi]
+        H[Past train journeys]
+        W[Weather records]
+        R[Current train state]
+        N[Delays at stations ahead]
+        O[Operating events]
+    end
+
+    subgraph Brain[Prediction steps]
+        X[Make one row of information for each track section]
+        M[Estimate section running time]
+        L[Use current speed for the active section]
+        S[Apply railway limits and events]
+        T[Join section times into a route forecast]
+    end
+
+    subgraph Result[What people can use]
+        A[Station-by-station ETAs]
+        E[Reasons and audit trail]
+        Q[Confidence and feed health]
+        P[Saved prediction versus actual result]
+    end
+
+    H --> X
+    W --> X
+    R --> X
+    N --> X
+    O --> S
+    X --> M --> L --> S --> T
+    T --> A
+    S --> E
+    T --> Q
+    T --> P
+```
+
+## The project parts in plain language
+
+| Part | File or folder | What it does |
+| --- | --- | --- |
+| Data preparation | `src/data/` | Cleans station, track, train, and weather information. |
+| Feature list | `src/model/features.py` | Defines exactly which pieces of information the model receives. |
+| Trained model | `models/lightgbm_eta.txt` | Estimates the time for one track section. It is a fast tree-based model. |
+| Track-ahead information | `src/engine/network_state.py` | Reads delays and train counts at stations ahead. |
+| Current-speed adjustment | `src/engine/state_correction.py` | Uses current speed and progress for the section the train is travelling now. |
+| Safety and event checks | `src/engine/rule_engine.py` | Prevents impossible times and adds known operating events. |
+| ETA calculator | `src/engine/eta_calculator.py` | Runs the full prediction from the current station to the destination. |
+| Data sources | `src/integrations/` | Connects saved replay journeys and the RailRadar live service. |
+| Replay | `src/replay/` | Moves through a saved journey one station at a time. |
+| Web API | `src/api/main.py` | Makes predictions and results available to the dashboard and other programs. |
+| Dashboard | `frontend/` | Shows the map, train state, station ETAs, alerts, and what-if events. |
+| Tests | `tests/` | Check calculations, API responses, data rules, leakage, speed, and failure cases. |
+
+## The formulas used by the project
+
+The formulas below describe the calculations in ordinary language first. The symbols are
+included so that the implementation can be checked precisely.
+
+### 1. Section prediction
+
+For section $k$, the model receives information $x_k$ and estimates its running time:
+
+$$
+\text{estimated section time}_k=f(x_k)
+$$
+
+Examples in $x_k$ include distance, timetable time, current delay, weather, train
+count, and delay at the next stations.
+
+### 2. Arrival time
+
+The next arrival time is the current time plus the final section time:
+
+$$
+\text{next arrival}=	ext{current time}+\text{final section time}
+$$
+
+For many stations, GaTi repeats this calculation:
+
+$$
+A_k=A_{k-1}+t_k
+$$
+
+- $A_k$ is the predicted arrival time at station $k$.
+- $t_k$ is the checked running time for the section before station $k$.
+
+### 3. Delay
+
+The predicted delay is the difference between predicted arrival and scheduled arrival:
+
+$$
+\text{predicted delay}=\text{predicted arrival}-\text{scheduled arrival}
+$$
+
+If the train is predicted at 11:08 and the schedule says 10:55, the predicted delay is
+13 minutes.
+
+### 4. Fastest physically possible time
+
+A 25 km section with a maximum speed of 100 km/h cannot take less than 15 minutes:
+
+$$
+\text{minimum time}=\frac{\text{distance}}{\text{maximum speed}}\times 60
+$$
+
+$$
+\frac{25}{100}\times60=15\text{ minutes}
+$$
+
+If the model says 10 minutes, the rule engine changes it to at least 15 minutes and
+records that change. This prevents a model mistake from becoming an impossible speed.
+
+### 5. Temporary speed restriction
+
+Suppose 15 km normally takes place at 100 km/h but a caution order limits that part to
+30 km/h. The added time is:
+
+$$
+	ext{added time}=60d\left(\frac{1}{v_{\text{restricted}}}-\frac{1}{v_{\text{normal}}}\right)
+$$
+
+$$
+60(15)\left(\frac{1}{30}-\frac{1}{100}\right)=21\text{ minutes}
+$$
+
+GaTi adds 21 minutes and places the reason in the audit trail.
+
+### 6. Current speed and remaining distance
+
+If the train has travelled 40% of a 50 km section, 60% remains:
+
+$$
+\text{remaining distance}=\text{section distance}\times(1-\text{progress})
+$$
+
+$$
+50(1-0.40)=30\text{ km}
+$$
+
+The live-speed estimate is then:
+
+$$
+	ext{live time}=\frac{\text{remaining distance}}{\text{current speed}}\times60
+$$
+
+For a fresh moving observation, GaTi blends 70% of the model's remaining-time estimate
+with 30% of this live-speed estimate. This affects only the active section.
+
+### 7. Confidence score
+
+The displayed confidence is a practical score, not a promise that the answer is correct.
+It starts at 95 and is adjusted for distance, weather, crowding, train density, and
+feed quality:
+
+$$
+C=\operatorname{clip}(95-1.5h-5w-p+d+q,25,98)
+$$
+
+In plain language:
+
+- farther stations reduce confidence by 1.5 points per station;
+- fog or heavy rain reduces it by 5 points;
+- serious downstream delay reduces it by 4 points;
+- a fresh live feed can increase it by 2 points;
+- stale or estimated data reduces it;
+- the final score stays between 25 and 98.
+
+## Live mode and saved replay mode
+
+GaTi has two ways to receive a train state:
+
+```mermaid
+flowchart LR
+    A[Saved replay journey] --> C[Common train-state record]
+    B[RailRadar live feed] --> C
+    C --> D[Same ETA calculation]
+    D --> E[Dashboard and API]
+```
+
+### Saved replay
+
+Replay is useful for demonstrations and repeatable tests. It loads a known journey and
+moves from station to station. The actual arrival at the next station can then be
+compared with the earlier prediction.
+
+### Live feed
+
+Live mode uses the RailRadar adapter when configured. The adapter reports connection
+health, request count, response time, cache use, and whether fallback is active.
+A missing or failed live feed should not crash the prediction path.
+
+### Feed age
+
+| Name | Feed age | Meaning |
+| --- | --- | --- |
+| `FRESH` | 0 to 60 seconds | Current information is trusted most. |
+| `AGING` | 61 to 180 seconds | Current speed is trusted less. |
+| `STALE` | More than 180 seconds | The system uses a more cautious estimate. |
+| `UNKNOWN` | No usable time | There is no freshness benefit. |
+
+## Four train movement situations
+
+The current-speed code treats a stopped train differently depending on where it is:
+
+| Situation | Meaning | Action |
+| --- | --- | --- |
+| `MOVING` | Speed is at least 15 km/h. | Blend the model with live speed when the feed is fresh. |
+| `SLOW_MOVING` | Speed is between 5 and 15 km/h. | Use a cautious blend because the train may be in a yard or under restriction. |
+| `STATION_HALT` | Speed is below 5 km/h at the beginning or end of a section. | Treat it as a normal station stop. |
+| `UNEXPECTED_STOP` | Speed is below 5 km/h in the middle of a section. | Add a three-minute signal or precedence hold buffer. |
+
+This distinction matters: a train stopped at a platform is normal, while a train stopped
+in the middle of the track may be waiting for a signal or another train.
+
+## Railway events and what-if examples
+
+You can test an event without changing the saved data. Supported examples are:
+
+- `SPEED_RESTRICTION`: a section has a lower speed;
+- `CAUTION_ORDER`: a formal speed caution is active;
+- `MAINTENANCE_BLOCK`: work temporarily holds the line;
+- `UNSCHEDULED_STOP`: the train must wait;
+- `SIGNAL_HOLD`: the route is waiting for clearance;
+- `CANCELLATION`, `DIVERSION`, and `RESCHEDULE`: larger route changes recorded by the rule engine.
+
+Example: add a 40 km/h caution over 10 km.
 
 ```powershell
 curl.exe -X POST http://127.0.0.1:8000/api/events/inject `
@@ -407,211 +375,268 @@ curl.exe -X POST http://127.0.0.1:8000/api/events/inject `
   -d '{"event_type":"CAUTION_ORDER","from_station":"HWH","to_station":"BWN","restricted_speed_kmh":40,"affected_km":10,"source_type":"CAUTION_ORDER"}'
 ```
 
-The response includes the recalculated state and active events. Clear scenarios with:
+Clear all test events:
 
 ```powershell
 curl.exe -X POST http://127.0.0.1:8000/api/events/clear
 ```
 
-## Measured results
+Every adjustment contains the old value, the new value, the difference, a reason, and
+where the rule came from. This makes it possible to answer: **Why did this ETA change?**
 
-The values below are copied from `models/evaluation_summary.json`. The headline is the
-unconstrained M3 LightGBM result on the temporal holdout test set, not a claim that a
-post-ML rule clamp improves statistical MAE in every scenario.
+## Data used by the model
 
-### Holdout scorecard
-
-| Model | MAE (min) | RMSE (min) | $R^2$ | Within +/-5 min | Within +/-10 min | P90 error |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| Schedule-naive baseline | 8.600 | 25.636 | 0.7091 | 62.06% | 77.21% | 21.00 |
-| Historical median | 8.419 | 25.956 | 0.7018 | 62.34% | 78.31% | 19.50 |
-| M0, base 23 features | 6.247 | 23.521 | 0.7551 | 71.79% | 85.29% | 13.96 |
-| M1, one-hop state | 6.237 | 23.456 | 0.7565 | 71.83% | 85.24% | 13.95 |
-| M2, multi-hop state | 6.249 | 23.550 | 0.7545 | 71.72% | 85.21% | 13.99 |
-| **M3, full spatial-temporal state** | **6.251** | **23.532** | **0.7549** | **71.85%** | **85.30%** | **13.94** |
-| M3 + rule engine | 6.913 | 23.888 | 0.7474 | 68.18% | 82.63% | 16.02 |
-
-The rule-engine row is intentionally reported separately: safety and physical validity
-are hard constraints, while MAE is a statistical objective. A safety layer should be
-judged with both error metrics and rule-compliance evidence.
-
-### Evaluation artifacts
-
-| Artifact | Contents |
+| Data | What it tells GaTi |
 | --- | --- |
-| `models/evaluation_summary.json` | Main and baseline metrics. |
-| `models/ablation_ladder.json` | M0-M3 feature-tier comparison. |
-| `models/horizon_evaluation.json` | Error by downstream hop horizon. |
-| `models/scenario_evaluation.json` | Error by delay severity. |
-| `models/network_pressure_evaluation.json` | Error by corridor pressure. |
-| `models/rule_impact_evaluation.json` | Rule interventions and physical checks. |
-| `logs/prediction_eval_log.jsonl` | Closed-loop prediction and arrival evidence. |
+| Train movement records | How long sections actually took. |
+| Timetable data | Planned arrival, departure, dwell, and section time. |
+| Station and track data | Which stations are connected and how far apart they are. |
+| Weather data | Temperature, rain, wind, visibility, fog, and heavy rain. |
+| Station-hour grid | Recent delay, delayed-train count, and active-train count at stations. |
+| Live or replay state | Current delay, speed, progress, and feed age. |
+
+### Keeping future information out
+
+The project separates time into three periods:
+
+$$
+\text{Train: Sep 1--22}\rightarrow\text{Check: Sep 23--26}\rightarrow\text{Test: Sep 27--30, 2024}
+$$
+
+The model learns from the first period, is checked during the second, and is finally
+measured on the last period. Historical averages are made from training records before
+they are used for later dates. Station delay lookups use earlier hours, not future hours.
+This prevents the answer from secretly using information that would not have been known
+at prediction time.
+
+The rule is tested in [tests/test_no_leakage.py](tests/test_no_leakage.py).
+
+## What information enters the model?
+
+The basic model uses these groups of information:
+
+| Group | Examples | Why it helps |
+| --- | --- | --- |
+| Timetable and distance | Planned section time, distance, dwell time | Describes the normal journey. |
+| Current delay | Arrival and departure delay at the last station | Shows what delay is already being carried forward. |
+| Past section times | Median, average, slowest usual time, variation | Describes how this piece of track normally behaves. |
+| Traffic and calendar | Train count, hour, weekday, weekend | Captures busy periods and different days. |
+| Weather | Temperature, rain, visibility, fog, wind | Captures conditions that change running time. |
+| Railway zone | Zone such as NR, ER, or SR | Captures regional operating differences. |
+| Track-ahead state | One-, two-, and three-station delay signals | Warns about problems before the train reaches them. |
+
+The project tests four versions of the model:
+
+| Version | What it adds | Test MAE |
+| --- | --- | ---: |
+| M0 | Basic train, track, time, and weather information | 6.247 minutes |
+| M1 | Delay and train counts at the next station | 6.237 minutes |
+| M2 | Information from two and three stations ahead | 6.249 minutes |
+| M3 | Recent and rolling delay patterns | 6.251 minutes |
+
+M3 is the full 34-feature version used by the current prediction path. The differences
+are small, so all versions are kept as useful comparison points rather than claiming
+that every extra input always improves the score.
+
+## Results in simple words
+
+These values come from `models/evaluation_summary.json` and use unseen dates from
+September 27 to 30, 2024.
+
+| Method | Average error | Within 5 minutes | What it means |
+| --- | ---: | ---: | --- |
+| Schedule-only estimate | 8.600 min | 62.06% | Uses the timetable and current delay only. |
+| Historical section average | 8.419 min | 62.34% | Uses what the same section usually does. |
+| Full M3 model | **6.251 min** | **71.85%** | Uses timetable, history, weather, and track-ahead information. |
+| M3 plus rule checks | 6.913 min | 68.18% | Adds hard physical and operating limits. |
+
+The rule-checked result is shown separately because safety checks and prediction accuracy
+are different goals. A rule may make an estimate slightly less close to an old test value
+while preventing an impossible speed. Both results matter.
+
+The project also stores:
+
+- `models/horizon_evaluation.json`: accuracy at different numbers of stations ahead;
+- `models/scenario_evaluation.json`: accuracy for on-time, delayed, and severely delayed trains;
+- `models/network_pressure_evaluation.json`: accuracy at different levels of crowding;
+- `models/rule_impact_evaluation.json`: changes made by the rule checks;
+- `logs/prediction_eval_log.jsonl`: predictions compared with later observed arrivals.
 
 ## API guide
 
-The service runs at `http://127.0.0.1:8000`. FastAPI also publishes interactive
-documentation at `/docs` and `/redoc`.
+Start the server, then open `http://127.0.0.1:8000/docs` for interactive API documentation.
+The most useful calls are:
 
-### Journey and replay
-
-| Method | Endpoint | Use |
+| Method | Address | What it does |
 | --- | --- | --- |
-| `GET` | `/api/trains` | List the four configured demo journeys. |
-| `GET` | `/api/trains/catalog?search=12303` | Search the wider train catalog. |
-| `POST` | `/api/replay/train` | Select `{ "train_number": 12303, "date": "2024-09-28" }`. |
-| `GET` | `/api/replay/state` | Get current station, forward ETAs, comparison table, and summary. |
-| `POST` | `/api/replay/step` | Set `{ "step": 2 }` and evaluate the arrived station. |
+| `GET` | `/api/trains` | Shows the four ready-made demo journeys. |
+| `GET` | `/api/trains/catalog?search=12303` | Searches the train catalog. |
+| `POST` | `/api/replay/train` | Selects a train and date for replay. |
+| `GET` | `/api/replay/state` | Shows the current station and all upcoming predictions. |
+| `POST` | `/api/replay/step` | Moves replay to a station and checks the previous prediction. |
+| `POST` | `/api/mode/switch` | Selects replay or live mode. |
+| `GET` | `/api/live/health` | Shows live-feed health. |
+| `GET` | `/api/live/provider/status` | Shows the active source and fallback state. |
+| `GET` | `/api/live/state` | Shows current live state and predictions. |
+| `GET` | `/api/live/station/{code}` | Shows the station board. |
+| `GET` | `/api/network-state/{station_code}?hour=12` | Shows delay and train count at a station. |
+| `GET` | `/api/alerts` | Shows active delay, event, feed, and crowding alerts. |
+| `POST` | `/api/events/inject` | Adds a test event. |
+| `POST` | `/api/events/clear` | Removes test events. |
+| `GET` | `/api/predictions/log` | Shows running prediction accuracy. |
+| `GET` | `/api/benchmarks` | Returns the main saved results. |
+| `GET` | `/api/benchmarks/horizon` | Returns results by distance into the journey. |
+| `GET` | `/api/benchmarks/scenarios` | Returns results by delay size. |
+| `GET` | `/api/benchmarks/rules` | Returns rule-check results. |
+| `GET` | `/api/benchmarks/network-pressure` | Returns results by station crowding. |
+| `GET` | `/api/benchmarks/ablation-ladder` | Returns M0 to M3 comparisons. |
+| `GET` | `/api/feature-importance` | Shows which inputs mattered most to the model. |
+| `GET` | `/api/demo/live-loop` | Runs a complete observe, predict, arrive, and check example. |
 
-### Live, network, and events
+### Select a replay journey
 
-| Method | Endpoint | Use |
-| --- | --- | --- |
-| `POST` | `/api/mode/switch` | Switch `historical_replay` or `live_external`. |
-| `GET` | `/api/live/health` | Provider connectivity, latency, freshness, and rate-limit health. |
-| `GET` | `/api/live/provider/status` | Provider identity, fallback state, and telemetry counters. |
-| `GET` | `/api/live/state` | Get the current canonical state and forward predictions. |
-| `GET` | `/api/live/station/{code}` | Get a station's live board. |
-| `POST` | `/api/live/apikey` | Set a RailRadar API key at runtime. |
-| `GET` | `/api/network-state/{station_code}?hour=12` | Query pressure at one station-hour. |
-| `POST` | `/api/events/inject` | Add a what-if operational event. |
-| `POST` | `/api/events/clear` | Remove all active events. |
-| `GET` | `/api/alerts` | Return state-derived operational alerts. |
+```powershell
+curl.exe -X POST http://127.0.0.1:8000/api/replay/train `
+  -H "Content-Type: application/json" `
+  -d '{"train_number":12303,"date":"2024-09-28"}'
+```
 
-### Evidence and benchmarks
-
-| Method | Endpoint | Use |
-| --- | --- | --- |
-| `GET` | `/api/predictions/log` | Rolling self-evaluation metrics. |
-| `GET` | `/api/benchmarks` | Main scorecard. |
-| `GET` | `/api/benchmarks/horizon` | Horizon-stratified scores. |
-| `GET` | `/api/benchmarks/scenarios` | Delay-severity scores. |
-| `GET` | `/api/benchmarks/rules` | Rule impact results. |
-| `GET` | `/api/benchmarks/network-pressure` | Pressure-stratified scores. |
-| `GET` | `/api/benchmarks/ablation-ladder` | M0-M3 comparison. |
-| `GET` | `/api/feature-importance` | Top feature importance rows. |
-| `GET` | `/api/demo/live-loop` | Complete observation-to-evaluation demonstration. |
-
-Example state request:
+### Read its current predictions
 
 ```powershell
 curl.exe http://127.0.0.1:8000/api/replay/state
 ```
 
-Example Python client:
+### Read the same result in Python
 
 ```python
 import requests
 
-base = "http://127.0.0.1:8000"
-requests.post(f"{base}/api/replay/train", json={
+server = "http://127.0.0.1:8000"
+requests.post(f"{server}/api/replay/train", json={
     "train_number": 12303,
     "date": "2024-09-28",
 }).raise_for_status()
 
-state = requests.get(f"{base}/api/replay/state").json()
-next_stop = state["comparison_table"][0]
-print(next_stop["station_code"], next_stop["our_predicted_eta"])
+state = requests.get(f"{server}/api/replay/state").json()
+first_stop = state["comparison_table"][0]
+print(first_stop["station_code"])
+print(first_stop["our_predicted_eta"])
 ```
 
 ## Dashboard
 
-The FastAPI root serves the static operations dashboard. It is designed for three
-questions an operator asks repeatedly:
+The dashboard is served by the same FastAPI application. It brings together:
 
-1. Where is the train now, and how fresh is the observation?
-2. What will happen at the next stations, and why?
-3. Which downstream junction, weather condition, or operational event is driving the change?
+- current train position and delay;
+- the next station and later station ETAs;
+- the timetable versus GaTi comparison;
+- network crowding and active alerts;
+- live-feed age and fallback status;
+- what-if event controls;
+- prediction-versus-actual verification.
 
-The UI consumes the same API documented above; it does not contain a second prediction
-implementation.
+There is only one prediction engine. The dashboard calls the API; it does not make a
+separate estimate in the browser.
 
-## Quickstart
+## Quick setup
 
-### Option A: local Python environment
-
-PowerShell:
+### Windows PowerShell
 
 ```powershell
 py -m venv .venv
-.\\.venv\\Scripts\\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
 ```
 
-Open:
+Open these pages:
 
 - Dashboard: `http://127.0.0.1:8000/`
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- ReDoc: `http://127.0.0.1:8000/redoc`
+- API documentation: `http://127.0.0.1:8000/docs`
+- Alternative API documentation: `http://127.0.0.1:8000/redoc`
 
-### Option B: Docker Compose
+The saved replay works without a live API key.
+
+### Docker
 
 ```powershell
 docker compose up --build
 ```
 
-Optional live-feed configuration can be supplied through `.env`:
+For live mode, add these values to `.env` when available:
 
 ```text
 RAILRADAR_API_KEY=your-key
 RAILRADAR_BASE_URL=https://api.railradar.in/v1
 ```
 
-The system can be evaluated in replay mode without a live API key.
+## Check that it works
 
-## Verification
-
-Run the complete Python test suite:
+Run all tests:
 
 ```powershell
 python -m pytest tests/ -v
 ```
 
-The tests cover API contracts, data quality, ETA accumulation, live integration,
-replay stepping, network state, leakage controls, rule provenance, scalability, and
-throughput. The rule tests include examples such as:
+The tests check:
 
-- impossible speed clamping to the MPS floor;
-- exact TSR physics;
-- recovery-cap enforcement;
-- simultaneous rule audit trails;
-- caution orders and unscheduled stops;
-- invalid zero/negative inputs without division-by-zero crashes.
+- API responses and replay stepping;
+- ETA calculations;
+- data quality;
+- live-feed fallback behavior;
+- station-ahead delay calculations;
+- future-data leakage;
+- impossible speeds and operating events;
+- speed and memory behavior.
 
-For an end-to-end closed-loop demonstration:
+Run the complete replay demonstration:
 
 ```powershell
 curl.exe "http://127.0.0.1:8000/api/demo/live-loop?train_number=12303&date=2024-09-28"
 ```
 
-## Repository map
+That demonstration follows this loop:
+
+```mermaid
+sequenceDiagram
+    participant Feed as Replay or live feed
+    participant GaTi
+    participant Log as Accuracy log
+
+    Feed->>GaTi: Current train position and delay
+    GaTi->>GaTi: Estimate upcoming station times
+    GaTi->>Log: Save predictions
+    Feed->>GaTi: Train reaches a station
+    GaTi->>Log: Compare prediction with actual arrival
+    Log-->>GaTi: Updated error and accuracy
+```
+
+## Folder guide
 
 ```text
 .
-├── data/
-│   ├── raw/                 Original inputs
-│   ├── cleaned/             Clean stations, edges, and validation report
-│   └── processed/           Parquet section runs and station-hour grid
-├── docs/                    Architecture, evaluation, leakage, and operations reports
-├── frontend/                Static Leaflet dashboard
-├── models/                  LightGBM model and machine-readable evaluation artifacts
-├── scripts/                 Benchmark, replay, and smoke-test utilities
+├── data/                     Input, cleaned, and processed train data
+├── docs/                     Detailed research and evaluation reports
+├── frontend/                 Browser dashboard files
+├── models/                   Trained model and saved result files
+├── scripts/                  Benchmark and demonstration scripts
 ├── src/
-│   ├── api/                 FastAPI application and route handlers
-│   ├── data/                Cleaning and dataset construction
-│   ├── engine/              ETA, network, state correction, logging, and rules
-│   ├── integrations/        Replay and external provider adapters
-│   ├── model/               Features, training, baselines, and calibration
-│   └── replay/              Journey simulator
-├── tests/                   Automated tests
+│   ├── api/                  Web API
+│   ├── data/                 Data cleaning and preparation
+│   ├── engine/               ETA calculation, rules, network, and logging
+│   ├── integrations/         Replay and external feed connections
+│   ├── model/                Features, training, and evaluation
+│   └── replay/               Saved journey simulator
+├── tests/                    Automated checks
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
-└── package.json             Convenience start and test commands
+└── package.json
 ```
 
-### Related technical documents
+Useful deeper documents:
 
 - [Master system architecture](docs/master_system_architecture.md)
 - [Evaluation methodology](docs/evaluation_methodology.md)
@@ -622,14 +647,13 @@ curl.exe "http://127.0.0.1:8000/api/demo/live-loop?train_number=12303&date=2024-
 - [Scalability report](docs/scalability_report.md)
 - [Error analysis](docs/error_analysis.md)
 
-## Limitations and responsible use
+## Important limits
 
-- September 2024 data is a historical foundation, not a guarantee of current railway conditions.
-- RailRadar availability, API semantics, authentication, and rate limits are external dependencies.
-- Confidence is an operational score and must not be interpreted as a calibrated probability without a calibration study.
-- The 15% recovery cap and outlier ceiling are explicit engineering assumptions and should be reviewed by railway operations experts before deployment.
-- A forecast is decision support. It must not replace authorized signalling, dispatch, speed-control, or emergency procedures.
-- A live provider can be unavailable or stale; clients should display provider health and freshness alongside every ETA.
+- The training data is from September 2024. It cannot describe every future railway condition.
+- A live external feed can be slow, unavailable, or wrong. Always show its health and age with the ETA.
+- The confidence number is a useful warning score, not a guaranteed probability.
+- The 15% recovery limit and some upper limits are project assumptions that railway experts should review.
+- GaTi is decision support. It must not replace official signalling, dispatch, speed control, or emergency instructions.
 
 ## License
 
