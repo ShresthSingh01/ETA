@@ -55,7 +55,31 @@ STATION_ALIASES: Dict[str, str] = {
     'TVC': 'TVC',
     'CSMT': 'CSTM',
     'CSTM': 'CSTM',
-    'MAS': 'MAS'
+    'MAS': 'MAS',
+    'DDU': 'MGS',
+    'MGS': 'MGS',
+    'PRYJ': 'ALD',
+    'ALD': 'ALD',
+    'VGLJ': 'JHS',
+    'JHS': 'JHS',
+    'BSBS': 'MUV',
+    'MUV': 'MUV',
+    'PCOI': 'COI',
+    'COI': 'COI',
+    'RKMP': 'HBJ',
+    'HBJ': 'HBJ',
+    'SBIB': 'SBI',
+    'SBI': 'SBI',
+    'AYC': 'FD',
+    'FD': 'FD',
+    'MBDD': 'AME',
+    'AME': 'AME',
+    'MBDP': 'PBH',
+    'PBH': 'PBH',
+    'MCTM': 'UHP',
+    'UHP': 'UHP',
+    'DADN': 'MHOW',
+    'MHOW': 'MHOW'
 }
 
 KNOWN_STATION_COORDS: Dict[str, Tuple[float, float, str]] = {
@@ -70,7 +94,20 @@ KNOWN_STATION_COORDS: Dict[str, Tuple[float, float, str]] = {
     'NDLS': (28.642314, 77.220004, "New Delhi"),
     'HWH': (22.589200, 88.343500, "Howrah Jn"),
     'PURI': (19.813500, 85.831200, "Puri"),
-    'TVC': (8.487500, 76.952500, "Thiruvananthapuram")
+    'TVC': (8.487500, 76.952500, "Thiruvananthapuram"),
+    'DDU': (25.281900, 83.120700, "Pt. Deen Dayal Upadhyaya Jn"),
+    'PRYJ': (25.435800, 81.846300, "Prayagraj Jn"),
+    'VGLJ': (25.448400, 78.568500, "Virangana Lakshmibai Jhansi Jn"),
+    'BSBS': (25.317600, 82.973900, "Banaras"),
+    'PCOI': (25.385400, 81.861700, "Prayagraj Chheoki"),
+    'RKMP': (23.220100, 77.435500, "Rani Kamlapati"),
+    'SBIB': (23.080500, 72.580200, "Sabarmati BG"),
+    'AYC': (26.772500, 82.138600, "Ayodhya Cantt"),
+    'MCTM': (32.923000, 75.140000, "Martyr Captain Tushar Mahajan"),
+    'DADN': (22.551600, 75.760100, "Dr. Ambedkar Nagar"),
+    'SMVB': (13.003900, 77.652100, "Sir M. Visvesvaraya Terminal Bengaluru"),
+    'YNRK': (30.084700, 78.288200, "Yog Nagari Rishikesh"),
+    'EKNR': (21.832200, 73.708600, "Ekta Nagar")
 }
 
 
@@ -98,7 +135,34 @@ class ReplaySimulator:
         self.current_step = 0
         self.journey_sections: List[Dict[str, Any]] = []
         self.stations_route: List[Dict[str, Any]] = []
-        
+
+        # Load complete train names index for all 3,892 network services
+        import os
+        names_csv = 'Indian-Railway-Network-and-Delays/train_routes_Sep2024.csv'
+        if os.path.exists(names_csv):
+            try:
+                df_names = pd.read_csv(names_csv, usecols=['trainNumber', 'trainName']).drop_duplicates('trainNumber')
+                self.train_names = df_names.set_index('trainNumber')['trainName'].to_dict()
+            except Exception:
+                self.train_names = {}
+        else:
+            self.train_names = {}
+
+        # Build fast lookup index for all network train corridors
+        try:
+            firsts = self.df_all.drop_duplicates('train_number', keep='first').set_index('train_number')[['from_station', 'date']]
+            lasts = self.df_all.drop_duplicates('train_number', keep='last').set_index('train_number')['to_station']
+            self.train_routes_summary = {
+                int(num): {
+                    'origin': str(firsts.loc[num, 'from_station']),
+                    'dest': str(lasts.loc[num]),
+                    'date': str(firsts.loc[num, 'date'])
+                }
+                for num in firsts.index
+            }
+        except Exception:
+            self.train_routes_summary = {}
+
         self.load_journey(self.current_train, self.current_date)
 
     def _resolve_station_info(self, code: str) -> Tuple[str, float, float]:
@@ -381,9 +445,29 @@ class ReplaySimulator:
             }
         }
 
+        # Resolve train info metadata
+        train_info = next((t for t in DEMO_TRAINS_CONFIG if t['train_number'] == self.current_train), None)
+        if train_info:
+            train_name = train_info['train_name']
+            route_desc = train_info['route_desc']
+            category = train_info['category']
+        elif self.stations_route:
+            origin_name = self.stations_route[0].get('station_name', self.stations_route[0].get('station_code', 'Origin'))
+            dest_name = self.stations_route[-1].get('station_name', self.stations_route[-1].get('station_code', 'Destination'))
+            train_name = self.train_names.get(self.current_train, f"Express {self.current_train}")
+            route_desc = f"{origin_name} → {dest_name}"
+            category = "National Rail Service"
+        else:
+            train_name = self.train_names.get(self.current_train, f"Express {self.current_train}")
+            route_desc = "Rail Corridor"
+            category = "National Rail Service"
+
         return {
             'mode': self.mode,
             'train_number': self.current_train,
+            'train_name': train_name,
+            'route_desc': route_desc,
+            'category': category,
             'date': self.current_date,
             'current_step': k,
             'total_steps': total_sections,

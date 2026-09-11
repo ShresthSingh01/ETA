@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>गति GaTi | Dynamic ETA Prediction System</title>
+  <meta name="description" content="Operational Dynamic ETA Prediction and Corridor Dispatch Monitoring System for Indian Railways.">
+  
+  <!-- Typography: Chivo + JetBrains Mono (Precision Rail Telemetry Grotesque) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chivo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Phosphor Icons -->
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css"/>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css"/>
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="apple-touch-icon" href="Logo.png">
+  
+  <!-- Instant Zero-FOUC Theme Resolver -->
+  <script>
+    (function() {
+      try {
+        const saved = localStorage.getItem('gati-theme');
+        const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = saved || (prefersDark ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Design System CSS -->
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+
+  <!-- Institutional Top Header -->
+  <header class="top-header">
+    <div class="header-inner">
+      <div class="brand-group">
+        <a href="/" class="brand-logo-link" title="गति GaTi | Indian Railways Dynamic ETA System">
+          <img src="Logo.png" alt="GaTi Indian Railways Logo" class="brand-logo-img" width="44" height="38">
+        </a>
+        <div class="brand-titles">
+          <div class="brand-title">
+            <span class="brand-devanagari">गति</span> GaTi
+            <span class="brand-sep">/</span>
+            <span class="brand-system-name">Dynamic ETA Forecast Engine</span>
+          </div>
+          <div class="brand-subtitle"></div>
+        </div>
+      </div>
+
+      <div class="header-status-badge">
+        <span class="engine-live-dot"></span>
+        <span class="engine-live-text">Live Telemetry Feed Active</span>
+      </div>
+
+      <div class="header-controls">
+        <!-- Theme Mode Toggle Button -->
+        <button id="btn-theme-toggle" class="btn btn-outline btn-sm" title="Toggle between Day Telemetry and Night Radar Dark Mode" aria-label="Toggle visual theme">
+          <i class="ph ph-moon" id="theme-toggle-icon" style="font-size: 14px;"></i>
+          <span id="theme-toggle-text">Dark Mode</span>
+        </button>
+
+        <!-- Performance Analytics Drawer Button -->
+        <button id="btn-toggle-evidence" class="btn btn-outline btn-sm" title="Corridor prediction accuracy, congestion benchmarks, and performance metrics">
+          <i class="ph ph-chart-bar" style="font-size: 14px;"></i>
+          <span>Corridor Analytics</span>
+        </button>
+
+        <!-- Active Alerts Counter Pill -->
+        <button id="btn-alerts-pill" class="btn btn-subtle btn-sm" title="Active operational restrictions">
+          <span id="alerts-indicator-dot" style="width: 7px; height: 7px; border-radius: 50%; background: var(--status-ontime-ink); display: inline-block;"></span>
+          <span id="alerts-count-text">0 Alerts</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Operations Two-Column Split Layout -->
+  <div class="ops-layout">
+
+    <!-- Left Operations Rail (300px fixed) -->
+    <aside class="ops-left-rail" aria-label="Operational Controls &amp; Telemetry Stream">
+
+      <!-- Rail Section 1: Corridor & Telemetry Selection -->
+      <div class="rail-card">
+        <div class="rail-section-header">
+          <i class="ph ph-train-regional"></i>
+          <span>Corridor Selector</span>
+        </div>
+        <div class="rail-form-group">
+          <label for="train-select" class="rail-label">Active Train Route</label>
+          <select id="train-select" class="rail-select">
+            <optgroup label="Flagship Corridors">
+              <option value="12303">12303 Poorva Express (HWH → NDLS)</option>
+              <option value="12951">12951 Mumbai Tejas Rajdhani (MMCT → NDLS)</option>
+              <option value="12801">12801 Purushottam Express (PURI → NDLS)</option>
+              <option value="12626">12626 Kerala Express (NDLS → TVC)</option>
+            </optgroup>
+            <optgroup label="Premier Trunk Express">
+              <option value="12301">12301 Howrah Rajdhani (HWH → NDLS)</option>
+              <option value="12002">12002 Bhopal Shatabdi (NDLS → RKMP)</option>
+              <option value="12314">12314 Sealdah Rajdhani (NDLS → SDAH)</option>
+              <option value="22691">22691 Bengaluru Rajdhani (SBC → NZM)</option>
+              <option value="12423">12423 Dibrugarh Rajdhani (DBRG → NDLS)</option>
+              <option value="12259">12259 Bikaner Duronto (SDAH → BKN)</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="rail-form-group">
+          <label for="train-search-input" class="rail-label">Search Network Catalog (3,892 Trains)</label>
+          <div style="display: flex; gap: 6px;">
+            <input type="text" id="train-search-input" class="rail-input" placeholder="e.g. 12002 or Shatabdi" style="flex: 1; font-family: var(--font-mono); font-size: 0.8rem;" />
+            <button id="btn-search-train" class="btn btn-secondary btn-sm" type="button" title="Search network trains" style="padding: 0 10px;">
+              <i class="ph ph-magnifying-glass"></i>
+            </button>
+          </div>
+          <div id="train-search-results" class="train-search-popover" style="display: none;"></div>
+        </div>
+        <div class="rail-form-group">
+          <label for="mode-select" class="rail-label">Telemetry Feed Mode</label>
+          <select id="mode-select" class="rail-select">
+            <option value="historical_replay">Historical Replay (Verified NTES)</option>
+            <option value="live_external">Live Telemetry (RailRadar Stream)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Rail Section 2: Live Telemetry Stream (Divide-Y, Zero-Box Clutter) -->
+      <div class="rail-card">
+        <div class="rail-section-header">
+          <i class="ph ph-broadcast"></i>
+          <span>Live Telemetry Stream</span>
+        </div>
+        <div class="rail-metrics-stack">
+          <div class="rail-metric-row">
+            <span class="rail-metric-label">Current Position</span>
+            <span id="metric-current-station" class="rail-metric-val">HWH · Howrah Jn</span>
+          </div>
+          <div class="rail-metric-row">
+            <span class="rail-metric-label">Observed Delay</span>
+            <div id="metric-current-delay" class="rail-metric-val">
+              <span class="badge badge-ontime">ON-TIME (0m)</span>
+            </div>
+          </div>
+          <div class="rail-metric-row">
+            <span class="rail-metric-label">Clock / Watermark</span>
+            <span id="metric-current-clock" class="rail-metric-val" style="font-family: var(--font-mono);">08:00 AM</span>
+          </div>
+          <div class="rail-metric-row">
+            <span class="rail-metric-label">Telemetry Source</span>
+            <span id="metric-telemetry-source" class="rail-metric-val">NTES Ground Truth</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rail Section 3: Operational Safety Guardrails -->
+      <div class="rail-card rail-card-muted">
+        <div class="rail-section-header">
+          <i class="ph ph-shield-check"></i>
+          <span>Operational Safety Guardrails</span>
+        </div>
+        <div class="rail-compliance-list">
+          <div class="compliance-item">
+            <i class="ph ph-check-circle" style="color: var(--status-ontime-ink);"></i>
+            <span>Track Maximum Permissible Speed (MPS) Floor</span>
+          </div>
+          <div class="compliance-item">
+            <i class="ph ph-check-circle" style="color: var(--status-ontime-ink);"></i>
+            <span>Spatial Downstream Congestion &amp; Headway Clearance</span>
+          </div>
+          <div class="compliance-item">
+            <i class="ph ph-check-circle" style="color: var(--status-ontime-ink);"></i>
+            <span>Dynamic Weather &amp; Visibility Limits</span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Main Operations Canvas (flex-1) -->
+    <main class="ops-main-canvas" aria-label="Operations Canvas">
+
+      <!-- Active Critical Alerts Banner (Hidden by default, shown if alerts exist) -->
+      <div id="alerts-banner" class="alerts-banner" style="display: none;"></div>
+
+      <!-- Active Journey Overview & Playback Control Card -->
+      <section class="journey-header-card" aria-label="Train Status and Playback">
+        <div class="journey-top-row">
+          <div class="train-meta-info">
+            <div class="train-title-line">
+              <span id="train-number-badge" class="train-number-tag">12303</span>
+              <span id="train-name-heading">Poorva Express</span>
+            </div>
+            <div id="train-route-text" class="train-route-desc">Howrah Jn (HWH) → New Delhi (NDLS) · Superfast Trunk Corridor</div>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="playback-controls-group">
+            <div class="playback-buttons">
+              <button id="btn-prev-step" class="btn btn-outline btn-sm" title="Previous Station Stop">
+                <i class="ph ph-skip-back"></i>
+                <span>Prev Stop</span>
+              </button>
+              <button id="btn-autoplay" class="btn btn-primary btn-sm" title="Auto-advance journey every 3 seconds">
+                <span id="autoplay-icon"><i class="ph ph-play"></i></span>
+                <span id="autoplay-text">Auto Play</span>
+              </button>
+              <button id="btn-next-step" class="btn btn-outline btn-sm" title="Next Station Stop">
+                <span>Next Stop</span>
+                <i class="ph ph-skip-forward"></i>
+              </button>
+              <button id="btn-reset-step" class="btn btn-subtle btn-sm" title="Reset to Origin">
+                <i class="ph ph-arrow-counter-clockwise"></i>
+                <span>Origin</span>
+              </button>
+            </div>
+
+            <div class="step-indicator-text">
+              <span id="step-counter-text">Stop 1 of 18</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Interactive Route Timeline Track -->
+        <div class="timeline-track-container" title="Click any station to jump replay directly to that point">
+          <div id="timeline-track" class="timeline-track">
+            <div class="timeline-line"></div>
+            <div id="timeline-progress-line" class="timeline-progress-line" style="transform: scaleX(0);"></div>
+            <!-- Station nodes dynamically injected by app.js -->
+          </div>
+        </div>
+      </section>
+
+    <!-- Core Layout Grid -->
+    <div class="dashboard-grid">
+
+      <!-- Map Card -->
+      <section class="map-card" aria-label="Geographic Route Map">
+        <div class="map-card-header">
+          <div class="map-title">
+            <i class="ph ph-map-trifold" style="font-size: 15px; color: var(--accent);"></i>
+            <span>Route Corridor &amp; Real-Time Position</span>
+          </div>
+          <div class="map-legend">
+            <div class="legend-item"><span class="legend-dot traversed"></span> Traversed</div>
+            <div class="legend-item"><span class="legend-dot current"></span> Current Position</div>
+            <div class="legend-item"><span class="legend-dot upcoming"></span> Forward Route</div>
+            <div class="legend-item"><span class="legend-dot restricted"></span> Speed Restriction (TSR)</div>
+          </div>
+        </div>
+        <div id="journey-map"></div>
+      </section>
+
+      <!-- What-If Disruption Simulator Card -->
+      <section class="whatif-card" aria-label="What-If Disruption Simulator">
+        <div class="card-header-row">
+          <div>
+            <h2 class="section-title">
+              <i class="ph ph-lightning" style="font-size: 15px; color: var(--accent);"></i>
+              <span>Operational Disruption Simulator (What-If Analysis)</span>
+            </h2>
+            <p class="section-subtitle">
+              Inject track events, temporary speed restrictions (TSR Form T/409), and maintenance blocks for instant closed-loop ETA recalibration.
+            </p>
+          </div>
+          <button id="btn-clear-events" class="btn btn-subtle btn-sm" title="Clear all injected restrictions">
+            <i class="ph ph-arrow-counter-clockwise"></i>
+            <span>Reset All Restrictions</span>
+          </button>
+        </div>
+
+        <form id="whatif-form" class="whatif-form-grid" onsubmit="return false;">
+          <div class="form-field">
+            <label for="event-type-select">Disruption Type</label>
+            <select id="event-type-select" class="form-select">
+              <option value="SPEED_RESTRICTION">Temporary Speed Restriction (TSR)</option>
+              <option value="CAUTION_ORDER">Caution Order (Work Ahead)</option>
+              <option value="MAINTENANCE_BLOCK">Maintenance Block (Track Closure)</option>
+              <option value="UNSCHEDULED_STOP">Unscheduled Signal Halt</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="event-from-station">From Station</label>
+            <select id="event-from-station" class="form-select"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="event-to-station">To Station</label>
+            <select id="event-to-station" class="form-select"></select>
+          </div>
+
+          <div class="form-field" id="field-speed">
+            <label for="event-speed">Speed Cap (km/h)</label>
+            <input type="number" id="event-speed" class="form-input font-mono" value="30" min="10" max="110">
+          </div>
+
+          <div class="form-field" id="field-halt">
+            <label for="event-halt">Halt / Delay (min)</label>
+            <input type="number" id="event-halt" class="form-input font-mono" value="15" min="2" max="180">
+          </div>
+
+          <div class="form-field">
+            <label for="event-km">Section Length (km)</label>
+            <input type="number" id="event-km" class="form-input font-mono" value="18" min="1" max="250">
+          </div>
+
+          <div class="form-field">
+            <button id="btn-inject-event" class="btn btn-primary" type="button">
+              <i class="ph ph-lightning"></i>
+              <span>Inject Disruption</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Active Disruptions Tray -->
+        <div id="active-events-tray" class="active-events-tray" style="display: none;">
+          <!-- Dynamically populated list of active events -->
+        </div>
+      </section>
+
+      <!-- Downstream Station Prediction Comparison Table -->
+      <section class="table-card" aria-label="Dynamic ETA Predictions Table">
+        <div class="table-header-bar">
+          <div>
+            <h2 class="section-title">
+              <i class="ph ph-clock-countdown" style="font-size: 15px; color: var(--accent);"></i>
+              <span>Downstream Station ETAs &amp; Closed-Loop Precision</span>
+            </h2>
+            <p class="section-subtitle">
+              Dynamic multi-section corridor forecast benchmarked against scheduled timetable and official NTES actuals.
+            </p>
+          </div>
+          <div style="font-size: 11px; color: var(--ink-secondary); font-family: var(--font-mono);">
+            Status: <span id="closed-loop-status-tag" class="badge badge-ontime">EVALUATING</span>
+          </div>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="prediction-table" id="prediction-table">
+            <thead>
+              <tr>
+                <th style="width: 45px;">Hop</th>
+                <th>Station</th>
+                <th>Distance</th>
+                <th>Timetable Arr</th>
+                <th>NTES Baseline</th>
+                <th>GaTi Dynamic ETA</th>
+                <th>Observed Actual</th>
+                <th>Accuracy Gain</th>
+                <th>Confidence</th>
+                <th style="width: 110px; text-align: right;">Logic Audit</th>
+              </tr>
+            </thead>
+            <tbody id="prediction-table-body">
+              <!-- Rows dynamically generated by app.js -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Summary Statistics Footer -->
+        <div class="table-footer-summary">
+          <div class="summary-metric">
+            <span class="summary-metric-label">GaTi Mean Absolute Error</span>
+            <span id="summary-gati-mae" class="summary-metric-val">--</span>
+          </div>
+          <div class="summary-metric">
+            <span class="summary-metric-label">NTES Baseline Error</span>
+            <span id="summary-ntes-mae" class="summary-metric-val">--</span>
+          </div>
+          <div class="summary-metric">
+            <span class="summary-metric-label">Precision Improvement</span>
+            <span id="summary-improvement" class="summary-metric-val" style="color: var(--status-ontime-ink);">--</span>
+          </div>
+          <div class="summary-metric">
+            <span class="summary-metric-label">Remaining Stops</span>
+            <span id="summary-remaining-count" class="summary-metric-val">--</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+  <!-- Technical Evidence Slide-Out Drawer -->
+  <div id="drawer-backdrop" class="drawer-backdrop"></div>
+  <aside id="evidence-drawer" class="evidence-drawer" aria-label="Technical Evidence Panel">
+    <div class="drawer-header">
+      <div class="drawer-brand-wrap">
+        <img src="Logo.png" alt="GaTi Logo" class="drawer-logo-img" width="28" height="24">
+        <div>
+          <h3 class="drawer-title">Corridor Performance &amp; Analytics</h3>
+          <p class="drawer-subtitle">Operational Accuracy Benchmarks &amp; Network Health</p>
+        </div>
+      </div>
+      <button id="btn-close-drawer" class="btn btn-subtle btn-sm" title="Close Panel">
+        <i class="ph ph-x"></i>
+        <span>Close</span>
+      </button>
+    </div>
+
+    <!-- Drawer Navigation Tabs -->
+    <div class="drawer-tabs">
+      <button class="drawer-tab-btn active" data-tab="tab-ablation">Accuracy Benchmarks</button>
+      <button class="drawer-tab-btn" data-tab="tab-pressure">Network Congestion</button>
+      <button class="drawer-tab-btn" data-tab="tab-features">Delay Drivers</button>
+      <button class="drawer-tab-btn" data-tab="tab-eval">Live Verification</button>
+    </div>
+
+    <div class="drawer-body">
+      <!-- Tab 1: Accuracy Benchmarks -->
+      <div id="tab-ablation" class="evidence-tab-pane active">
+        <div class="evidence-card">
+          <h4 class="evidence-card-title">Accuracy Benchmarks by Architectural Tier</h4>
+          <p class="evidence-subtext">
+            Systematic benchmark quantifying cumulative error reduction from baseline timetable heuristics to the full real-time operational engine across 3,892 historical journeys.
+          </p>
+          <table class="evidence-mini-table" id="table-ablation">
+            <thead>
+              <tr>
+                <th>Tier</th>
+                <th>Configuration</th>
+                <th>Mean Error (MAE)</th>
+                <th>Within ±3m</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-ablation">
+              <!-- Injected by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 2: Network Congestion Stress Test -->
+      <div id="tab-pressure" class="evidence-tab-pane">
+        <div class="evidence-card">
+          <h4 class="evidence-card-title">Network Congestion &amp; Bottleneck Resilience</h4>
+          <p class="evidence-subtext">
+            Prediction reliability during heavy junction bottlenecks, headway compression, and cross-traffic delays.
+          </p>
+          <table class="evidence-mini-table" id="table-pressure">
+            <thead>
+              <tr>
+                <th>Congestion Level</th>
+                <th>NTES Timetable Error</th>
+                <th>GaTi Error</th>
+                <th>Precision Advantage</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-pressure">
+              <!-- Injected by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Tab 3: Primary Delay Drivers -->
+      <div id="tab-features" class="evidence-tab-pane">
+        <div class="evidence-card">
+          <h4 class="evidence-card-title">Primary Operational Delay Factors</h4>
+          <p class="evidence-subtext">
+            Relative weight of operational variables driving dynamic section-by-section arrival estimates.
+          </p>
+          <div id="features-container">
+            <!-- Injected by app.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Live Verification -->
+      <div id="tab-eval" class="evidence-tab-pane">
+        <div class="evidence-card">
+          <h4 class="evidence-card-title">Continuous Precision &amp; Accuracy Verification</h4>
+          <p class="evidence-subtext">
+            Real-time validation against verified station arrival timestamps.
+          </p>
+          <div id="eval-metrics-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+            <!-- Injected by app.js -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-brand-wrap">
+        <img src="Logo.png" alt="GaTi Logo" class="footer-logo-img" width="22" height="19">
+        <div>
+          <span class="footer-badge">गति GaTi Engine v2.1</span> · Indian Railways Operations &amp; Dispatch Division
+        </div>
+      </div>
+      <div>
+        Sub-second Dynamic Recalibration · Integrated with National Train Enquiry System (NTES)
+      </div>
+    </div>
+  </footer>
+
+  <!-- Leaflet Map JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- GSAP 3 Core for Kinematic Interpolation & Numerical Odometer Animations -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  
+  <!-- Core Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

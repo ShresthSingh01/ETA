@@ -1,7 +1,7 @@
 {
-  "name": "gati-sih-26028",
+  "name": "gati-eta-engine",
   "version": "2.1.0",
-  "description": "GaTi - Dynamic ETA Prediction System for Indian Railways (SIH PS 26028)",
+  "description": "GaTi - Dynamic ETA Prediction & Corridor Operations System for Indian Railways",
   "scripts": {
     "start": ".\\.venv\\Scripts\\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000",
     "dev": ".\\.venv\\Scripts\\python.exe -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000 --reload",

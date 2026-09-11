@@ -25,7 +25,7 @@ from src.engine.prediction_logger import LivePredictionLogger, PredictionRecord
 
 app = FastAPI(
     title="GaTi - Indian Railways Dynamic ETA Prediction System",
-    description="GaTi: Smart India Hackathon 2026 (PS 26028) - Operational Dynamic ETA Engine",
+    description="GaTi: Real-Time Dynamic ETA Prediction and Corridor Dispatch System for Indian Railways",
     version="2.1.0"
 )
 
@@ -128,24 +128,42 @@ def get_available_trains():
 def get_train_catalog(search: Optional[str] = None):
     """Returns catalog of searchable trains with metadata, station count, and category."""
     trains = list(DEMO_TRAINS_CONFIG)
+    existing_nums = {t['train_number'] for t in trains}
+
     if search:
         q = search.strip().lower()
+        matched_nums = []
+        routes_summary = getattr(simulator, 'train_routes_summary', {})
+        train_names = getattr(simulator, 'train_names', {})
+
         if q.isdigit():
-            num = int(q)
-            already_present = any(t['train_number'] == num for t in trains)
-            if not already_present and num in simulator.df_all['train_number'].values:
-                sub = simulator.df_all[simulator.df_all['train_number'] == num]
-                origin = sub['from_station'].iloc[0]
-                dest = sub['to_station'].iloc[-1]
-                trains.append({
-                    'train_number': num,
-                    'train_name': f"Express {num}",
-                    'route_desc': f"{origin} → {dest}",
-                    'category': 'National Network Service',
-                    'default_date': str(sub['date'].iloc[0])
-                })
+            for num in routes_summary.keys():
+                if q in str(num) and num not in existing_nums:
+                    matched_nums.append(num)
+                    if len(matched_nums) >= 25:
+                        break
         else:
-            trains = [t for t in trains if q in str(t['train_number']) or q in t['train_name'].lower() or q in t['route_desc'].lower()]
+            for num, name in train_names.items():
+                if q in name.lower() and num not in existing_nums and num in routes_summary:
+                    matched_nums.append(num)
+                    if len(matched_nums) >= 25:
+                        break
+
+        for num in matched_nums:
+            r_info = routes_summary.get(num, {})
+            origin = r_info.get('origin', 'Origin')
+            dest = r_info.get('dest', 'Destination')
+            t_name = train_names.get(num, f"Express {num}")
+            trains.append({
+                'train_number': num,
+                'train_name': t_name,
+                'route_desc': f"{origin} → {dest}",
+                'category': 'National Rail Network',
+                'default_date': r_info.get('date', '2024-09-28')
+            })
+
+        trains = [t for t in trains if q in str(t['train_number']) or q in t['train_name'].lower() or q in t['route_desc'].lower()]
+
     return {
         "total": len(trains),
         "trains": trains
@@ -200,7 +218,7 @@ def get_operational_alerts():
             "title": f"Schedule Delay Advisory (+{curr_delay:.0f}m)",
             "affected_entity": f"Train {current_train} at {stn_name}",
             "description": f"Observed delay of {curr_delay:.1f} minutes at {stn_name}.",
-            "impact": "Downstream ETA dynamically adjusted by ML inference.",
+            "impact": "Downstream corridor ETAs dynamically recalibrated.",
             "timestamp": now_iso,
             "status": "ACTIVE"
         })
@@ -215,7 +233,7 @@ def get_operational_alerts():
             "title": "Historical Replay & Archive Telemetry Active",
             "affected_entity": "System Ingestion Pipeline",
             "description": f"Operating on verified NTES telemetry archive (Watermark: {health.get('fallback_watermark', 'Verified Archive')}).",
-            "impact": "High accuracy inference maintained from verified ground truth records.",
+            "impact": "High precision forecast maintained from verified NTES records.",
             "timestamp": now_iso,
             "status": "ACTIVE"
         })
