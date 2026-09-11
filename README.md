@@ -1,50 +1,64 @@
 <p align="center">
-  <h1 align="center">🚂 GaTi — Dynamic ETA Prediction for Indian Railways</h1>
-  <p align="center">
-    <strong>Smart India Hackathon 2026 • Problem Statement 26028</strong><br/>
-    <em>Dynamic Forecast of Expected Time of Arrival (ETA) for Coaching Trains</em>
-  </p>
+  <img src="./Logo.png" alt="GaTi Indian Railways Dynamic ETA System Logo" width="180">
+</p>
+
+<h1 align="center">🚂 GaTi — Dynamic ETA Prediction for Indian Railways</h1>
+
+<p align="center">
+  <strong>Smart India Hackathon 2026 • Problem Statement 26028</strong><br/>
+  <em>Dynamic Forecast of Expected Time of Arrival (ETA) for Coaching Trains</em><br/>
+  <strong>Ministry of Railways, Government of India</strong>
 </p>
 
 <p align="center">
-  <a href="#-benchmark-scorecard--m0m3-ablation-ladder"><img alt="Test MAE" src="https://img.shields.io/badge/Test_MAE-6.237_min_(M1)-brightgreen?style=for-the-badge"/></a>
-  <a href="#-benchmark-scorecard--m0m3-ablation-ladder"><img alt="Accuracy" src="https://img.shields.io/badge/±5min_Accuracy-71.85%25_(M3)-blue?style=for-the-badge"/></a>
+  <a href="#benchmark-scorecard--m0m3-ablation-ladder"><img alt="Test MAE" src="https://img.shields.io/badge/Test_MAE-6.237_min_(M1)-brightgreen?style=for-the-badge"/></a>
+  <a href="#benchmark-scorecard--m0m3-ablation-ladder"><img alt="Accuracy" src="https://img.shields.io/badge/±5min_Accuracy-71.85%25_(M3)-blue?style=for-the-badge"/></a>
   <a href="#pillar-2-downstream-network-state-looking-ahead-on-the-tracks"><img alt="Network Engine" src="https://img.shields.io/badge/Network_Engine-Spatial--Temporal_Grid-purple?style=for-the-badge"/></a>
-  <a href="#-test-suite-7676-passed"><img alt="Tests" src="https://img.shields.io/badge/Tests-76_passed_(100%25)-success?style=for-the-badge"/></a>
-  <a href="#-rule-engine-formal-proofs-2121-passed"><img alt="Rules" src="https://img.shields.io/badge/Rule_Proofs-21%2F21_passed-success?style=for-the-badge"/></a>
+  <a href="#test-suite-7676-passed"><img alt="Tests" src="https://img.shields.io/badge/Tests-76_passed_(100%25)-success?style=for-the-badge"/></a>
+  <a href="#rule-engine-formal-proofs-2121-passed"><img alt="Rules" src="https://img.shields.io/badge/Rule_Proofs-21%2F21_passed-success?style=for-the-badge"/></a>
   <a href="#pillar-3-deterministic-railway-constraint-engine-physics--safety"><img alt="Safety" src="https://img.shields.io/badge/G%26SR_Compliance-21%2F21_Boundaries_Passed-green?style=for-the-badge"/></a>
-  <a href="#-national-scale-scalability--performance-proofs"><img alt="Scalability" src="https://img.shields.io/badge/Scalability-508_journeys%2Fsec-orange?style=for-the-badge"/></a>
-  <a href="#-containerized-deployment--docker-quickstart"><img alt="Docker" src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white"/></a>
+  <a href="#national-scale-scalability--performance-proofs"><img alt="Scalability" src="https://img.shields.io/badge/Scalability-508_journeys%2Fsec-orange?style=for-the-badge"/></a>
+  <a href="#quickstart--installation-guide"><img alt="Docker" src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white"/></a>
+</p>
+
+<p align="center">
+  <a href="#executive-summary">Executive Summary</a> •
+  <a href="#master-system-architecture--the-5-pillars-of-gati">Architecture</a> •
+  <a href="#complete-34-feature-guide-every-feature-explained">34-Feature Guide</a> •
+  <a href="#benchmark-scorecard--m0m3-ablation-ladder">Benchmarks</a> •
+  <a href="#rule-engine-formal-proofs-2121-passed">Rule Proofs</a> •
+  <a href="#the-7-hard-questions-technical-defense-dossier">Technical Defense</a> •
+  <a href="#quickstart--installation-guide">Quickstart</a>
 </p>
 
 ---
 
 ## 📑 Table of Contents
 
-1. [Executive Summary](#-executive-summary)
-2. [The Real-World Railway Problem (Why NTES Fails)](#-the-real-world-railway-problem-why-ntes-fails)
-3. [Master System Architecture & The 5 Pillars of GaTi](#-master-system-architecture--the-5-pillars-of-gati)
+1. [Executive Summary](#executive-summary)
+2. [The Real-World Railway Problem (Why NTES Fails)](#the-real-world-railway-problem-why-ntes-fails)
+3. [Master System Architecture & The 5 Pillars of GaTi](#master-system-architecture--the-5-pillars-of-gati)
    - [Pillar 1: Machine Learning Section Model (LightGBM)](#pillar-1-machine-learning-section-model-lightgbm)
    - [Pillar 2: Downstream Network State (Looking Ahead on the Tracks)](#pillar-2-downstream-network-state-looking-ahead-on-the-tracks)
    - [Pillar 3: Deterministic Railway Constraint Engine (Physics & Safety)](#pillar-3-deterministic-railway-constraint-engine-physics--safety)
    - [Pillar 4: Live Kinematics & 4-State Motion Classifier (In-Flight GPS)](#pillar-4-live-kinematics--4-state-motion-classifier-in-flight-gps)
    - [Pillar 5: Dynamic Trajectory Accumulator & Extreme Scalability](#pillar-5-dynamic-trajectory-accumulator--extreme-scalability)
-4. [Mathematical Formulations & Worked Numerical Proofs](#-mathematical-formulations--worked-numerical-proofs)
-5. [Complete 34-Feature Guide: Every Feature Explained](#-complete-34-feature-guide-every-feature-explained)
-6. [Benchmark Scorecard & M0–M3 Ablation Ladder](#-benchmark-scorecard--m0m3-ablation-ladder)
-7. [Network-Pressure Congestion Stress Benchmark](#-network-pressure-congestion-stress-benchmark)
-8. [6-Layer Architecture Waterfall Benchmark](#-6-layer-architecture-waterfall-benchmark)
-9. [Rule Engine Formal Proofs (21/21 Passed)](#-rule-engine-formal-proofs-2121-passed)
-10. [A Tale of Three Trains: Real-World Case Studies](#-a-tale-of-three-trains-real-world-case-studies)
-11. [The 7 Hard Questions: Technical Defense Dossier](#-the-7-hard-questions-technical-defense-dossier)
-12. [Dual-Mode Telemetry & Live Integration](#-dual-mode-telemetry--live-integration)
-13. [National-Scale Scalability & Performance Proofs](#-national-scale-scalability--performance-proofs)
-14. [Interactive Operations Dashboard](#-interactive-operations-dashboard)
-15. [REST API Documentation (21 Endpoints)](#-rest-api-documentation-21-endpoints)
-16. [Test Suite (76/76 Passed)](#-test-suite-7676-passed)
-17. [Quickstart & Installation Guide](#-quickstart--installation-guide)
-18. [Data Foundation & Discarded Datasets](#-data-foundation--discarded-datasets)
-19. [Project Structure & Technical Stack](#-project-structure--technical-stack)
+4. [Mathematical Formulations & Worked Numerical Proofs](#mathematical-formulations--worked-numerical-proofs)
+5. [Complete 34-Feature Guide: Every Feature Explained](#complete-34-feature-guide-every-feature-explained)
+6. [Benchmark Scorecard & M0–M3 Ablation Ladder](#benchmark-scorecard--m0m3-ablation-ladder)
+7. [Network-Pressure Congestion Stress Benchmark](#network-pressure-congestion-stress-benchmark)
+8. [6-Layer Architecture Waterfall Benchmark](#6-layer-architecture-waterfall-benchmark)
+9. [Rule Engine Formal Proofs (21/21 Passed)](#rule-engine-formal-proofs-2121-passed)
+10. [A Tale of Three Trains: Real-World Case Studies](#a-tale-of-three-trains-real-world-case-studies)
+11. [The 7 Hard Questions: Technical Defense Dossier](#the-7-hard-questions-technical-defense-dossier)
+12. [Dual-Mode Telemetry & Live Integration](#dual-mode-telemetry--live-integration)
+13. [National-Scale Scalability & Performance Proofs](#national-scale-scalability--performance-proofs)
+14. [Interactive Operations Dashboard](#interactive-operations-dashboard)
+15. [REST API Documentation (21 Endpoints)](#rest-api-documentation-21-endpoints)
+16. [Test Suite (76/76 Passed)](#test-suite-7676-passed)
+17. [Quickstart & Installation Guide](#quickstart--installation-guide)
+18. [Data Foundation & Discarded Datasets](#data-foundation--discarded-datasets)
+19. [Project Structure & Technical Stack](#project-structure--technical-stack)
 
 ---
 
@@ -73,21 +87,27 @@ GaTi fixes this by combining three layers of intelligence:
 
 To understand why a new system is necessary, we must look at how Indian Railways actually runs, and why the current National Train Enquiry System (NTES) breaks down.
 
-```
-Indian Railways Trunk Route: Block Signalling and Platform Bottlenecks
+```text
+  TRUNK ROUTE BLOCK SIGNALLING AND PLATFORM QUEUING DYNAMICS
+  ========================================================================
 
-  ┌──────────────────────────┐      ┌──────────────────────────────┐      ┌─────────────────────────────┐
-  │   Station A: New Delhi   │      │   Automatic Block 1          │      │   Station B: Aligarh Jn     │
-  │   Departs Late: +30 min  │─────▶│   Clear Track                │─────▶│   Timetable Cushion         │
-  └──────────────────────────┘      │   🟢 Green  ·  MPS 130 km/h │      │   10–15% Slack              │
-                                    └──────────────────────────────┘      └──────────────┬──────────────┘
-                                                                                          │
-                                                                                          ▼
-  ┌──────────────────────────────┐      ┌──────────────────────────────┐      ┌───────────────────────────┐
-  │   Station C: Kanpur Central  │      │   Automatic Block 3          │      │   Automatic Block 2       │
-  │   Platform Jammed            │◀─────│   🔴 Red Home Signal         │◀─────│   🟡 Yellow Signal        │
-  │   4 Trains Delayed           │      │   Dead Halt Outside Junction │      │   Headway Compressed      │
-  └──────────────────────────────┘      └──────────────────────────────┘      └───────────────────────────┘
+  [Station A: New Delhi]
+      Departs Late: +30 min
+         |
+         v
+  [Automatic Block Section 1]  ===> Clear Track: Green Signal (MPS 130 km/h)
+         |
+         v
+  [Station B: Aligarh Jn]      ===> Timetable Slack (10-15% Commercial Cushion)
+         |                          Loco pilot safely recovers ~4 minutes
+         v
+  [Automatic Block Section 2]  ===> Yellow Signal (Caution: Headway Compressed)
+         |
+         v
+  [Automatic Block Section 3]  ===> Red Home Signal (Outer Signal Hold)
+         |                          Dead stop 3 km outside junction
+         v
+  [Station C: Kanpur Central]  ===> Platform Jammed (4 delayed trains occupying)
 ```
 
 ### 1. How Indian Railways Operates in Practice
@@ -98,40 +118,22 @@ A railway is not an open highway. Trains are confined to fixed steel tracks divi
 
 ### 2. The 4 Fatal Flaws of the Current NTES System
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│  🔴  NTES — Static Linear Projection                                                │
-│                                                                                     │
-│   ┌──────────────────┐      ┌──────────────────────┐      ┌──────────────────────┐ │
-│   │ Delay: +30 min   │─────▶│ Station B: +30 min   │─────▶│ Station C: +30 min   │ │
-│   │ (origin)         │      │ (blind copy)          │      │ Blind to Kanpur Jam  │ │
-│   └──────────────────┘      └──────────────────────┘      └──────────┬───────────┘ │
-│                                                                       │             │
-│                                                                       ▼             │
-│                                                          ┌──────────────────────┐   │
-│                                                          │ ⚠ Sudden Crash       │   │
-│                                                          │ Delay jumps to +75 m │   │
-│                                                          │ (zero advance warning)│  │
-│                                                          └──────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────────────┘
+```text
+  NTES (Legacy) vs GaTi (Proposed) Trajectory Comparison
+  ------------------------------------------------------------------------
 
-┌─────────────────────────────────────────────────────────────────────────────────────┐
-│  🟢  GaTi — Dynamic Network & Physics Forecasting                                   │
-│                                                                                     │
-│   ┌──────────────────┐      ┌──────────────────────┐      ┌──────────────────────┐ │
-│   │ Delay: +30 min   │─────▶│ Section A→B: +26 min │─────▶│ Section B→C          │ │
-│   │ (origin)         │      │ ✓ Timetable Slack     │      │ ⚡ Senses Kanpur Jam  │ │
-│   └──────────────────┘      │ ✓ Driver recovers 4m  │      │ Congestion Wave Early│ │
-│                              └──────────────────────┘      └──────────┬───────────┘ │
-│                                                                       │             │
-│                                                                       ▼             │
-│                                                          ┌──────────────────────┐   │
-│                                                          │ ✓ SR Rule 4.08 Clamp │   │
-│                                                          │ ✓ Signal Hold Added  │   │
-│                                                          │ Accurate: +68 min    │   │
-│                                                          │ (warned 40 min early)│   │
-│                                                          └──────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────────────┘
+  [1] NTES: Static Linear Projection (Blind to track conditions)
+      Origin (+30m) ===> Station B (+30m) ===> Station C (+30m)
+                                                      |
+                                                      v  SUDDEN CRASH
+                                                 Delay jumps to +75m!
+                                                 (Zero advance warning)
+
+  [2] GaTi: Dynamic Network & Physics Forecasting
+      Origin (+30m) ===> Section A->B (+26m) ===> Section B->C (+68m)
+                         - Timetable slack        - Senses Kanpur bottleneck
+                         - Recovers 4m            - Adds signal clearance hold
+                                                  - Warned 40 minutes early!
 ```
 
 #### Flaw 1: The "Static Delay Trap" (Naive Linear Math)
@@ -156,97 +158,45 @@ NTES does not know the weather.
 
 GaTi integrates data, machine learning, graph physics, safety rules, and real-time telemetry into a unified production pipeline:
 
-```
-╔══════════════════════════════════════════════════════════════════════════════════════════════╗
-║  LAYER 1 — Telemetry Ingestion & Provider                                                    ║
-║                                                                                              ║
-║   ┌─────────────────────────────┐   ┌─────────────────────────────┐                         ║
-║   │ RailRadar Live REST API     │   │ Historical Replay Feed       │                         ║
-║   │ /trains/{id}/live           │   │ 164,564 Holdout Records      │                         ║
-║   └──────────────┬──────────────┘   └──────────────┬──────────────┘                         ║
-║                  └──────────────────┬───────────────┘                                        ║
-║                                     ▼                                                        ║
-║          ┌──────────────────────────────────────────────────┐                                ║
-║          │  TrainStateProvider  (Polymorphic Base)           │                                ║
-║          │  Token Bucket: 30 req/min  ·  60s TTL Cache       │                                ║
-║          │  Watermarked Simulation Standby                   │                                ║
-║          └──────────────────────────┬───────────────────────┘                                ║
-║                                     ▼                                                        ║
-║          ┌──────────────────────────────────────────────────┐                                ║
-║          │  CanonicalTrainState: Speed, Progress, Delay,     │                                ║
-║          │  Freshness                                        │                                ║
-║          └──────────────────────────┬───────────────────────┘                                ║
-╚══════════════════════════════════════╪═══════════════════════════════════════════════════════╝
-                                       │
-╔══════════════════════════════════════╪═══════════════════════════════════════════════════════╗
-║  DATA FOUNDATION — Feature Stores    │                                                        ║
-║                                      │                                                        ║
-║  ┌─────────────────┐  ┌──────────────┴──────────────┐  ┌────────────────────────────────┐   ║
-║  │ 1,282,325 NTES  │  │ 97,920 ERA5 Weather Records │  │ IRN Topology: 9,335 edges      │   ║
-║  │ Movement Runs   │  │ Temp, Rain, Fog, Visibility  │  │ 8,990 Stations                 │   ║
-║  └────────┬────────┘  └──────────────┬──────────────┘  └─────────────────┬──────────────┘   ║
-║           ▼                          │                                    │                   ║
-║  ┌──────────────────────┐            └──────────────┬─────────────────────┘                  ║
-║  │ 2D Spatial-Temporal  │                           ▼                                        ║
-║  │ Grid: 4,728 stations │──────────▶  ┌─────────────────────────────────────────────────┐   ║
-║  │ × 720 hours (13.6MB) │             │  34-Feature Vectorization Engine                 │   ║
-║  │ O(1) lookup          │             │  M0: 23 features (baseline + weather)            │   ║
-║  └──────────────────────┘             │  M1: 27 features (+ 1-hop network)               │   ║
-║                                       │  M2: 31 features (+ multi-hop spatial)           │   ║
-║                                       │  M3: 34 features (+ temporal rolling)            │   ║
-║                                       └────────────────────────┬────────────────────────┘   ║
-╚════════════════════════════════════════════════════════════════╪════════════════════════════╝
-                                                                  │
-╔════════════════════════════════════════════════════════════════╪════════════════════════════╗
-║  LAYER 2 — Core Intelligence & Safety Pipeline                  │                            ║
-║                                                                  │                            ║
-║  ┌──────────────────────────────┐          ┌────────────────────┴──────────────────────┐    ║
-║  │ Downstream Network Engine    │─────────▶│  LightGBM Gradient Boosted Trees           │    ║
-║  │ 1-hop / 2-hop / 3-hop delay  │          │  L1 Loss · 34 features · <0.1 ms / query   │    ║
-║  │ Weighted: 0.5d₁+0.3d₂+0.2d₃ │          └─────────────────────────┬─────────────────┘    ║
-║  │ 2h + 6h rolling trends       │                                    │                       ║
-║  └──────────────────────────────┘                                    ▼                       ║
-║                                                   ┌──────────────────────────────────────┐  ║
-║  ┌──────────────────────────────┐                 │  Deterministic Rule Engine (4 stages) │  ║
-║  │ Live Kinematic Classifier    │────────────────▶│  S1: G&SR 4.08 MPS Speed Floor        │  ║
-║  │ MOVING · SLOW · HALT · STOP  │                 │  S2: 15% WTT Slack Recovery Cap       │  ║
-║  │ GPS blend: 70/30 → 85/15     │                 │  S3: Form T/409 Caution Orders        │  ║
-║  └──────────────────────────────┘                 │  S4: Full Audit Log with Citations    │  ║
-║                                                   └─────────────────────┬────────────────┘  ║
-╚═════════════════════════════════════════════════════════════════════════╪═══════════════════╝
-                                                                           │
-╔═════════════════════════════════════════════════════════════════════════╪═══════════════════╗
-║  LAYER 3 — High-Speed Trajectory Engine                                  │                   ║
-║                                                                           ▼                   ║
-║          ┌──────────────────────────────────────────────────────────────────┐                ║
-║          │  Pre-Allocated 2D NumPy Array  [N_sections × 34]                 │                ║
-║          └──────────────────────────────────┬───────────────────────────────┘                ║
-║                                             ▼                                                ║
-║          ┌──────────────────────────────────────────────────────────────────┐                ║
-║          │  Station-by-Station Forward Loop                                  │                ║
-║          │  T_arr = T_dep + t_section                                        │                ║
-║          │  delay = max(0, T_arr − T_sched)                                  │                ║
-║          │  T_next_dep = T_arr + scheduled_dwell                             │                ║
-║          └──────────────────────────────────┬───────────────────────────────┘                ║
-║                                             ▼                                                ║
-║          ┌──────────────────────────────────────────────────────────────────┐                ║
-║          │  Dynamic Confidence: 95% − 1.5%/hop − Weather − Congestion       │                ║
-║          └──────────────────────────────────┬───────────────────────────────┘                ║
-╚══════════════════════════════════════════════╪═════════════════════════════════════════════╝
-                                               │
-╔══════════════════════════════════════════════╪═════════════════════════════════════════════╗
-║  LAYER 4 — Serving, Auditing & Dashboard     │                                              ║
-║                                              ▼                                              ║
-║      ┌──────────────────────────────────────────────────────┐                              ║
-║      │  FastAPI Microservice · 21 REST Endpoints · P50=1.85ms│                              ║
-║      └────────┬─────────────────────────────────┬────────────┘                              ║
-║               ▼                                 ▼                                           ║
-║  ┌────────────────────────┐     ┌───────────────────────────────────────┐                  ║
-║  │ Autonomous Eval Loop   │     │ Control Room Dashboard                │                  ║
-║  │ 250-entry ring buffer  │     │ Leaflet map · Step replay             │                  ║
-║  │ JSONL audit store      │     │ Dynamic badges · What-If injector     │                  ║
-║  └────────────────────────┘     └───────────────────────────────────────┘                  ║
-╚═════════════════════════════════════════════════════════════════════════════════════════════╝
+```text
+  GATI END-TO-END PRODUCTION SYSTEM ARCHITECTURE
+  ========================================================================
+
+  LAYER 1: TELEMETRY INGESTION & DATA FOUNDATION
+  +----------------------------------------------------------------------+
+  |  * RailRadar Live REST API (/trains/{id}/live, token bucket 30/min)  |
+  |  * Historical Replay Provider (164,564 holdout records)              |
+  |  * 2D Spatial-Temporal NumPy Memory Grid (4,728 stns x 720h, 13.6MB) |
+  |  * ERA5 Weather Reanalysis (97,920 records: temp, rain, fog, vis)    |
+  +-----------------------------------+----------------------------------+
+                                      |
+                                      v
+  LAYER 2: CORE INTELLIGENCE & STATUTORY SAFETY PIPELINE
+  +----------------------------------------------------------------------+
+  |  * 34-Feature Vectorization Engine (Additive Tiers M0 -> M1 -> M2 -> M3)|
+  |  * LightGBM Section Predictor (L1 Loss, 34 features, < 0.1 ms/query) |
+  |  * Downstream Network Engine (1/2/3-hop delays + 6h rolling trends)  |
+  |  * Live 4-State Kinematic Classifier (MOVING, SLOW, HALT, UNEXP_STOP)|
+  |  * Deterministic Rule Engine: G&SR 4.08 MPS Floor + 15% Slack Cap    |
+  +-----------------------------------+----------------------------------+
+                                      |
+                                      v
+  LAYER 3: VECTORIZED TRAJECTORY ACCUMULATOR
+  +----------------------------------------------------------------------+
+  |  * Pre-allocated 2D NumPy array feat_mat [N_sections x 34]           |
+  |  * Chained forward progression: T_arr = T_dep + t_section            |
+  |  * Dynamic Confidence Scoring (95% - 1.5%/hop - Weather - Congestion)|
+  |  * Ultra-low latency: 508 complete journeys/sec (P50 = 1.85 ms)      |
+  +-----------------------------------+----------------------------------+
+                                      |
+                                      v
+  LAYER 4: SERVING, AUDITING & CONTROL ROOM DASHBOARD
+  +----------------------------------------------------------------------+
+  |  * FastAPI Production Microservice (21 REST Endpoints)               |
+  |  * Interactive Operations Dashboard (Leaflet.js map, zero-framework) |
+  |  * What-If Scenario Injector (Caution orders, halts, power blocks)   |
+  |  * Self-Evaluating JSONL Audit Log (Rolling MAE/RMSE tracking)       |
+  +----------------------------------------------------------------------+
 ```
 
 ---
@@ -273,41 +223,28 @@ Think of driving your car onto a highway. You don't just look at your own speedo
 
 On a railway, this is even more critical because **trains cannot steer around each other**. If Kanpur Junction (3 stations ahead) has 5 delayed trains waiting for platforms, every train approaching Kanpur will be halted outside the station.
 
-```
- ACTIVE ROUTE AHEAD
- ───────────────────────────────────────────────────────────────────────
-   [Our Train: S0]  ──▶  [Station S1: 1-hop]  ──▶  [S2: 2-hop]  ──▶  [S3: 3-hop]
-    Current Pos          Immediate Next           2 Hops Ahead        3 Hops Ahead
+```text
+  DOWNSTREAM NETWORK STATE LOOKAHEAD PIPELINE
+  ========================================================================
 
-
- 2D DENSE SPATIAL-TEMPORAL NUMPY MEMORY GRID  (13.6 MB)
- ───────────────────────────────────────────────────────────────────────
-   grid_delay   [4,728 stations × 720 hours]   avg departure delay
-   grid_delayed [4,728 stations × 720 hours]   count of trains >5 min late
-   grid_active  [4,728 stations × 720 hours]   total active trains in hour
-
-   Query at hour H-1 (strictly lagged — zero future data leakage)
-   Lookup time: O(1) memory offset — ~0.00005 ms per query
-          │
-          ▼ lookup(S1, H-1)    lookup(S2, H-1)    lookup(S3, H-1)
-
-
- SPATIAL-TEMPORAL FEATURE SYNTHESIZER
- ───────────────────────────────────────────────────────────────────────
-   d₁ = avg delay at S1 at H-1
-   d₂ = avg delay at S2 at H-1
-   d₃ = avg delay at S3 at H-1
-
-   ┌─────────────────────────────────────────────────────────────────┐
-   │  net_downstream_weighted_delay  =  0.5·d₁ + 0.3·d₂ + 0.2·d₃  │
-   │  net_downstream_delay_trend     =  d₁ − d₂  (spatial gradient) │
-   │  rolling_station_mean_delay_6h  =  mean(H-1 … H-6) at S1       │
-   │  station_delay_trend_2h         =  delay(H-1) − delay(H-2)     │
-   └──────────────────────────────────┬──────────────────────────────┘
-                                      ▼
-              ┌────────────────────────────────────────┐
-              │   LightGBM 34-Feature Vector Input      │
-              └────────────────────────────────────────┘
+  ROUTE: [Current S0] ---> [S1: 1-Hop] ---> [S2: 2-Hop] ---> [S3: 3-Hop]
+                                |                |                |
+  +-----------------------------+----------------+----------------+------+
+  |            2D DENSE SPATIAL-TEMPORAL NUMPY GRID (13.6 MB)            |
+  |  grid_delay   (4,728 x 720h) : Mean departure delay in hour H-1      |
+  |  grid_delayed (4,728 x 720h) : Count of trains > 5 min late at H-1   |
+  |  grid_active  (4,728 x 720h) : Total train volume in section at H-1  |
+  |  Lookup latency: O(1) memory offset (~0.00005 ms per query)          |
+  +-----------------------------+----------------------------------------+
+                                |
+                                v
+  +----------------------------------------------------------------------+
+  |                 SPATIAL-TEMPORAL FEATURE SYNTHESIZER                 |
+  |  * net_downstream_weighted_delay = 0.5*d1 + 0.3*d2 + 0.2*d3          |
+  |  * net_downstream_delay_trend    = d1 - d2  (Spatial gradient)       |
+  |  * rolling_station_mean_delay_6h = mean(H-1 ... H-6) at S1           |
+  |  * station_delay_trend_2h        = delay(H-1) - delay(H-2) at S1     |
+  +----------------------------------------------------------------------+
 ```
 
 #### The Research Connection (RSTGCN Paper Explained Simply)
@@ -342,71 +279,52 @@ Machine learning is a pattern recognition engine, not a physicist. If an AI mode
 
 To make the system safe and operational for real Indian Railways dispatchers, every single raw machine learning prediction must pass through a 4-stage deterministic rule filter ([`src/engine/rule_engine.py`](file:///d:/ETA/src/engine/rule_engine.py)):
 
-```
-  ┌─────────────────────────────────────────────────────────────────────┐
-  │  Raw ML Prediction: t_ML                                            │
-  └────────────────────────────────────┬────────────────────────────────┘
-                                       │
-                                       ▼
-  ┌─────────────────────────────────────────────────────────────────────┐
-  │  STAGE 1 — BOUNDS: Physical Speed Limits                            │
-  │                                                                     │
-  │  Floor  →  t_min = max( dist/MPS × 60,  t_hist_min × 0.95,  1.0 ) │
-  │  Ceiling →  t_max = max( 3 × P90,  3.5 × t_sched,  30.0 )         │
-  │                                                                     │
-  │  If t_ML < t_min  →  clamp UP to t_min   (G&SR Rule 4.08)          │
-  │  If t_ML > t_max  →  clamp DOWN to t_max  (outlier guard)          │
-  └────────────────────────────────────┬────────────────────────────────┘
-                                       │
-                                       ▼
-  ┌─────────────────────────────────────────────────────────────────────┐
-  │  STAGE 2 — RECOVERY: Timetable Slack Cushion Cap                    │
-  │                                                                     │
-  │  t_rec_floor = t_sched × 0.85   (max 15% recovery allowed by WTT)  │
-  │  If train is late AND t < t_rec_floor  →  clamp to t_rec_floor     │
-  └────────────────────────────────────┬────────────────────────────────┘
-                                       │
-                                       ▼
-  ┌─────────────────────────────────────────────────────────────────────┐
-  │  STAGE 3 — EVENTS: Operational Speed Restrictions & Halts           │
-  │                                                                     │
-  │  • Form T/409 Caution Order  →  Δt = (d/v_restr − d/v_normal) × 60│
-  │  • Signal Hold / Crossing    →  t_final = t + halt_duration        │
-  │  • Maintenance Power Block   →  t_final = t + block_duration       │
-  │  • Cancellation / Diversion  →  ETA = 0  or  +10 min buffer        │
-  └────────────────────────────────────┬────────────────────────────────┘
-                                       │
-                                       ▼
-  ┌─────────────────────────────────────────────────────────────────────┐
-  │  STAGE 4 — AUDIT: Full Explainability Log                           │
-  │                                                                     │
-  │  Appends per adjustment:                                            │
-  │  • Rule name + statutory document reference                        │
-  │  • Original AI time  →  adjusted time                              │
-  │  • Delta minutes + human-readable reason                           │
-  └────────────────────────────────────┬────────────────────────────────┘
-                                       │
-                                       ▼
-  ┌─────────────────────────────────────────────────────────────────────┐
-  │  t_final — Final Constrained Running Time                           │
-  └─────────────────────────────────────────────────────────────────────┘
+```text
+  DETERMINISTIC RULE PIPELINE (src/engine/rule_engine.py)
+  ========================================================================
+
+  [Raw ML Prediction: t_ML]
+         |
+         v
+  STAGE 1: BOUNDS (Physical Speed Limits)
+  Floor   --> t_min = max( dist/MPS * 60, t_hist_min * 0.95, 1.0 )
+  Ceiling --> t_max = max( 3 * P90, 3.5 * t_sched, 30.0 )
+  Clamp: If t_ML < t_min, clamp UP to t_min (G&SR Rule 4.08)
+         |
+         v
+  STAGE 2: RECOVERY (Timetable Slack Allowance)
+  t_rec_floor = t_sched * 0.85  (Max 15% recovery allowed by WTT)
+  Clamp: If late and t < t_rec_floor, clamp to t_rec_floor
+         |
+         v
+  STAGE 3: EVENTS (Operational Restrictions & Halts)
+  * Form T/409 Caution Order: dt = (d/v_restr - d/v_normal) * 60
+  * Signal Hold / Crossing:   t_final = t + halt_duration
+  * Power Block / Incident:   t_final = t + block_duration
+         |
+         v
+  STAGE 4: AUDIT LOG (100% Codified Explainability)
+  * Rule ID & statutory document reference (e.g. RULE-GSR-408)
+  * Original ML time -> Adjusted time -> Delta minutes & reason
+         |
+         v
+  [t_final: Final Constrained Running Time]
 ```
 
 #### The 7 Official Rule Provenance Classifications
 Every operational rule enforced by GaTi is mapped directly to authoritative railway documentation:
 
-```
-                     ┌──────────────────────────────────┐
-                     │   Deterministic Rule Engine       │
-                     └──────────────────┬───────────────┘
-        ┌────────────┬────────────┬─────┴────────┬──────────────┬──────────────┬──────────────┐
-        ▼            ▼            ▼              ▼              ▼              ▼              ▼
- ┌────────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
- │OFFICIAL    │ │WTT_DATA  │ │OPERATIONAL│ │DERIVED   │ │MODEL     │ │ENGINEERING│ │SIMULATED │
- │_RULE       │ │Scheduled │ │_SOURCE   │ │_PHYSICS  │ │_ASSUMPTION│ │_HEURISTIC│ │_EVENT    │
- │G&SR 4.08  │ │Times &   │ │Form T/409│ │Kinematic │ │3×P90     │ │15% Slack │ │Dispatcher│
- │MPS Floor   │ │Dwells    │ │Caution   │ │TSR Decel.│ │Ceiling   │ │Recovery  │ │What-If   │
- └────────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘
+```text
+  +-----------------------------------------------------------------------+
+  |                      DETERMINISTIC RULE ENGINE                        |
+  +-------+-----------+-----------+-----------+-----------+-----------+---+
+          |           |           |           |           |           |
+          v           v           v           v           v           v
+    +-----------+ +-----------+ +-----------+ +-----------+ +-----------+
+    | OFFICIAL  | | WTT_DATA  | | OPERATIONAL| | DERIVED   | | SIMULATED |
+    | G&SR 4.08 | | Scheduled | | Form T/409 | | Kinematic | | Dispatcher|
+    | MPS Floor | | Timetable | | Caution    | | Decel/P90 | | What-If   |
+    +-----------+ +-----------+ +-----------+ +-----------+ +-----------+
 ```
 
 #### Stage 1 (Bounds): The Track Speed Floor (IR G&SR Rule 4.08)
@@ -445,43 +363,31 @@ Every time a rule adjusts a prediction, it appends a codified audit log detailin
 #### The Problem: What if the Train is Mid-Section Right Now?
 Station-to-station machine learning predicts full section times (from station departure to next station arrival). But when a passenger opens the app while the train is moving between stations, the train is already 60% of the way through the section!
 
-#### The 4 Operational Motion States ([`src/engine/state_correction.py`](file:///d:/ETA/src/engine/state_correction.py))
+#### The 4 Operational Motion States
+> **Implementation**: [`src/engine/state_correction.py`](file:///d:/ETA/src/engine/state_correction.py)
 By analyzing live GPS speed ($v$) and progress along the track segment ($p$), GaTi identifies four distinct operational states:
 
-```
-  ┌─────────────────────────────────────────────────┐
-  │  Ingest Live Telemetry: speed v, progress p     │
-  └─────────────────────┬───────────────────────────┘
-                        │
-          ┌─────────────┴──────────────┐
-          │   Evaluate Speed & Progress │
-          └──┬──────────┬──────────┬───┘
-             │          │          │
-     v≥15   │  5≤v<15  │   v<5    │  v<5
-    km/h     │   km/h   │  @stn.  │  mid-section
-             ▼          ▼    end   ▼          ▼
-  ┌────────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────────┐
-  │ State 1    │ │ State 2  │ │ State 3  │ │ State 4          │
-  │ MOVING     │ │ SLOW_    │ │ STATION  │ │ UNEXPECTED_STOP  │
-  │ Cruising   │ │ MOVING   │ │ _HALT    │ │ Mid-track halt   │
-  └─────┬──────┘ └────┬─────┘ └────┬─────┘ └────────┬─────────┘
-        │             │             │                 │
-        ▼             ▼             ▼                 ▼
-  ┌──────────┐ ┌──────────┐ ┌───────────┐ ┌─────────────────┐
-  │ FRESH:   │ │ 85% AI   │ │ Preserve  │ │ Inject +3.0 min │
-  │ 70% AI   │ │ +15%     │ │ scheduled │ │ signal clearance│
-  │ +30% GPS │ │ crawl    │ │ dwell     │ │ hold buffer     │
-  │ AGING:   │ │ floor:   │ │ time      │ │                 │
-  │ 85% AI   │ │ 8 km/h   │ │           │ │                 │
-  │ +15% GPS │ │          │ │           │ │                 │
-  │ STALE:   │ │          │ │           │ │                 │
-  └─────┬────┘ └────┬─────┘ └───────────┘ └─────────────────┘
-        └───────────┴────────────┴─────────────────┘
-                                 │
-                                 ▼
-                    ┌────────────────────────┐
-                    │ Blended Traversal Time │
-                    └────────────────────────┘
+```text
+  LIVE KINEMATICS 4-STATE CLASSIFIER (src/engine/state_correction.py)
+  ========================================================================
+
+             Ingest Live Telemetry: Speed (v), Section Progress (p)
+                                     |
+       +-----------------------------+-----------------------------+
+       |                             |                             |
+       v (v >= 15 km/h)              v (5 <= v < 15 km/h)          v (v < 5 km/h)
+  [State 1: MOVING]            [State 2: SLOW_MOVING]              |
+  Cruising speed               Caution crawl                       |
+  Fresh: 70% AI + 30% GPS      85% AI + 15% crawl                  |
+  Aging: 85% AI + 15% GPS      Floor: 8 km/h                       |
+                                                                   |
+                         +-----------------------------------------+
+                         |                                         |
+                         v (p <= 5% or p >= 98%)                   v (5% < p < 98%)
+                  [State 3: STATION_HALT]               [State 4: UNEXPECTED_STOP]
+                  Platform dwell                        Mid-track signal halt
+                  Preserve timetable dwell              Inject +3.0 min signal
+                                                        clearance buffer
 ```
 
 1. **`MOVING` (Cruising Speed $\ge 15$ km/h)**:
@@ -511,53 +417,32 @@ GPS feeds can lag or drop off in remote areas. GaTi automatically adjusts its tr
 #### How Forward Journeys Are Chained
 To predict arrivals at all upcoming stations along a train's journey, GaTi uses the **Dynamic ETA Accumulator** ([`src/engine/eta_calculator.py`](file:///d:/ETA/src/engine/eta_calculator.py)):
 
-```
-  ┌─────────────────────────────────────────────────────────────────────────────┐
-  │  Input: Train Number, Current Station, Departure Clock, Initial Delay       │
-  └──────────────────────────────────────┬──────────────────────────────────────┘
-                                         │
-                                         ▼
-  ┌──────────────────────── VECTORIZED INITIALIZER ──────────────────────────┐
-  │  Pre-allocate 2D NumPy feat_mat  [N_sections × 34]                       │
-  │  Load: distance, scheduled times, historical medians, weather             │
-  │  Compute downstream network state → fills 11 multi-hop features           │
-  └──────────────────────────────────────┬───────────────────────────────────┘
-                                         │
-                              ┌──────────▼─────────┐
-                              │ Begin Loop: i=1→N   │
-                              └──────────┬──────────┘
-                                         │
-                 ╔═══════════════════════╪══════════════════════════╗
-                 ║  PER-SECTION PASS     │                          ║
-                 ║                       ▼                          ║
-                 ║   Inject dynamic features: running_delay, hour   ║
-                 ║                       │                          ║
-                 ║                       ▼                          ║
-                 ║   LightGBM predict → t_ML  (<0.1 ms)             ║
-                 ║                       │                          ║
-                 ║       ┌───────────────┴────────────────┐         ║
-                 ║    i==1 and telemetry available?        │         ║
-                 ║    YES ▼                    NO ──────────┘         ║
-                 ║   4-State Kinematic Blend                         ║
-                 ║       │                                           ║
-                 ║       ▼ (both paths merge here)                   ║
-                 ║   4-Stage Rule Engine (G&SR 4.08, WTT 15%, T/409) ║
-                 ║                       │                          ║
-                 ║                       ▼                          ║
-                 ║   Advance clocks:                                 ║
-                 ║     T_arr    = T_dep + t_final                    ║
-                 ║     delay    = max(0, T_arr − T_sched)            ║
-                 ║     T_next   = T_arr + scheduled_dwell            ║
-                 ║                       │                          ║
-                 ║                       ▼                          ║
-                 ║   Confidence = 95% − 1.5%/hop − weather − congestion║
-                 ╚═══════════════════════╪══════════════════════════╝
-                              ┌──────────▼──────────────┐
-                              │ More sections?           │
-                              │ YES → back to loop start │
-                              │ NO  ─────────────────────┼─▶ Return complete ETA
-                              └──────────────────────────┘   trajectory table
-                                                              Total latency: 1.85 ms
+```text
+  VECTORIZED TRAJECTORY ACCUMULATOR (src/engine/eta_calculator.py)
+  ========================================================================
+
+  Input: Train ID, Current Station, Departure Clock, Initial Delay
+    |
+    v
+  [Vectorized Initializer]
+    * Pre-allocate 2D NumPy feat_mat [N_sections x 34]
+    * Load section distances, scheduled times, historical medians, weather
+    * Query 2D memory grid for downstream multi-hop network states
+    |
+    v
+  [Forward Trajectory Loop: i = 1 to N]
+    |-- 1. Inject running delay & dynamic hour of day
+    |-- 2. LightGBM predict section traversal time (< 0.1 ms)
+    |-- 3. If i == 1 and live GPS active: Apply 4-state kinematic blend
+    |-- 4. Apply 4-stage deterministic rule engine (G&SR 4.08, WTT 15%, T/409)
+    |-- 5. Advance clocks:
+    |      T_arr  = T_dep + t_final
+    |      delay  = max(0, T_arr - T_sched)
+    |      T_next = T_arr + scheduled_dwell
+    |-- 6. Compute empirical confidence score (95% - 1.5%/hop - penalties)
+    |
+    v
+  Return Complete ETA Trajectory Table  (Total Latency: 1.85 ms)
 ```
 
 #### Dynamic Confidence Scoring (25% to 98%)
@@ -677,32 +562,33 @@ To prove exactly how the math works, here are the core formulas with step-by-ste
 
 GaTi structures its 34 features into an additive 4-tier hierarchy to isolate and measure the value of each information layer:
 
-```mermaid
-graph LR
-    subgraph M0 ["Tier M0: Baseline - 23 Features"]
-        F_HIST["Historical Track Baselines: 6 features<br>median, mean, p90, min, std, edge_ntrains"]
-        F_TIME["Timetable and Temporal: 5 features<br>scheduled_sec_time, dwell, hour, dow, weekend"]
-        F_LIVE["Immediate Train State: 2 features<br>dep_delay_from, arr_delay_from"]
-        F_GEO["Track and Admin: 2 features<br>distance_km, zone"]
-        F_WX["ERA5 Weather: 8 features<br>temp, wind, precip, visibility, fog, rain, code"]
-    end
+```text
+  ADDITIVE 4-TIER FEATURE HIERARCHY
+  ========================================================================
 
-    subgraph M1 ["Tier M1: Immediate Downstream - 27 Features"]
-        F_M1["Spatial 1-Hop and Delay Pressure<br>net_1hop_mean_delay<br>net_1hop_delayed_count<br>net_1hop_active_count<br>net_downstream_weighted_delay"]
-    end
-
-    subgraph M2 ["Tier M2: Multi-Hop Ahead - 31 Features"]
-        F_M2["Spatial Multi-Hop and Trend<br>net_2hop_mean_delay<br>net_2hop_delayed_count<br>net_3hop_mean_delay<br>net_downstream_delay_trend"]
-    end
-
-    subgraph M3 ["Tier M3: Full Spatial-Temporal - 34 Features"]
-        F_M3["Temporal Rolling Memory<br>recent_station_mean_delay: 2h rolling<br>rolling_station_mean_delay_6h: 6h rolling<br>station_delay_trend_2h: H-1 vs H-2 rate"]
-    end
-
-    M0 --> M1
-    M1 --> M2
-    M2 --> M3
-    M3 --> LGBM["LightGBM 4.x Section Model<br>Test MAE: 6.237m - Punctuality: 71.85%"]
+  [Tier M0: Static Topology Baseline -- 23 Features]
+    * 6 Historical Track Baselines (median, mean, p90, min, std, edge_ntrains)
+    * 5 Timetable & Temporal (scheduled_sec_time, dwell, hour, dow, is_weekend)
+    * 2 Immediate Train State (dep_delay_from, arr_delay_from)
+    * 2 Track & Admin (distance_km, railway zone)
+    * 8 ERA5 Weather (temp, wind, precip, visibility, is_foggy, is_heavy_rain, code)
+           |
+           v
+  [Tier M1: Immediate Downstream Network -- 27 Features (+4)]
+    * 1-Hop Mean Delay, Delayed Train Count, Active Traffic Volume
+    * Distance-Weighted Downstream Shockwave (0.5*d1 + 0.3*d2 + 0.2*d3)
+           |
+           v
+  [Tier M2: Multi-Hop Spatial Network -- 31 Features (+4)]
+    * 2-Hop & 3-Hop Downstream Delays, Delayed Train Counts
+    * Spatial Delay Gradient (net_downstream_delay_trend = d1 - d2)
+           |
+           v
+  [Tier M3: Full Spatial-Temporal Network -- 34 Features (+3)]
+    * 2-Hour Rolling Mean, 6-Hour Chronic Gridlock Mean, 2-Hour Trend Velocity
+           |
+           v
+  ===> LightGBM Section Predictor: Test MAE 6.237m | Punctuality (±5m): 71.85%
 ```
 
 | # | Feature Name | Tier | Category | Plain-English Meaning | Why It Matters (Operational Reason) | Gain % |
@@ -751,7 +637,8 @@ To scientifically prove the value of each layer, GaTi was evaluated using a stri
 * **Validation Set**: 57,000 records (September 23–26, 2024)
 * **Holdout Test Set**: **164,564 completely unseen records** (September 27–30, 2024)
 
-### Complete Ablation Comparison Table ([`models/ablation_ladder.json`](file:///d:/ETA/models/ablation_ladder.json))
+### Complete Ablation Comparison Table
+> **Reference Data**: [`models/ablation_ladder.json`](file:///d:/ETA/models/ablation_ladder.json)
 
 | Model Tier | Features | Test MAE | Test RMSE | Within $\pm 5$ min | Within $\pm 10$ min | Within $\pm 15$ min | P90 Error | Gain over NTES | Operational Role |
 |:---|:---:|---:|---:|---:|---:|---:|---:|:---:|:---|
@@ -775,20 +662,20 @@ To scientifically prove the value of each layer, GaTi was evaluated using a stri
 
 To prove that downstream network intelligence truly matters, all 164,564 test trips were divided into four groups based on how much delay existed at stations ahead ([`models/network_pressure_evaluation.json`](file:///d:/ETA/models/network_pressure_evaluation.json)):
 
-```
- Accuracy Under Downstream Network Congestion  (164,564 test trips)
- ─────────────────────────────────────────────────────────────────────────────────────────────
+```text
+  ACCURACY UNDER DOWNSTREAM NETWORK CONGESTION (164,564 test trips)
+  ========================================================================
 
-  Congestion          NTES Error   GaTi Error    Gain
-  ─────────────────── ─────────── ──────────── ──────────────────────────────────────────────
-  Normal (<5 min)     7.23 min    5.01 min     ████████████████████████████ +30.6%
-  Low    (5–15 min)   8.49 min    6.18 min     ███████████████████████      +27.2%
-  Medium (15–30 min)  9.71 min    7.25 min     █████████████████████        +25.4%
-  High   (≥30 min)   11.16 min    8.53 min     ██████████████████           +23.6%
-  ─────────────────── ─────────── ──────────── ──────────────────────────────────────────────
+  Congestion Level       NTES Error   GaTi Error   Gain
+  ------------------     ----------   ----------   -----------------------
+  Normal (< 5 min)        7.23 min     5.01 min    [=================] +30.6%
+  Low    (5-15 min)       8.49 min     6.18 min    [===============]   +27.2%
+  Medium (15-30 min)      9.71 min     7.25 min    [=============]     +25.4%
+  High   (>= 30 min)     11.16 min     8.53 min    [===========]       +23.6%
+  ------------------     ----------   ----------   -----------------------
 
-  Direction of severity ─────────────────────────────────────────────────────────────────▶
-  (Congestion rises but GaTi consistently outperforms NTES at every level)
+  Direction of severity ------------------------------------------------->
+  (Congestion rises, but GaTi consistently outperforms NTES at every level)
 ```
 
 | Congestion Level Ahead | Test Samples | Share | NTES Schedule Error | GaTi Error (M3) | Absolute Improvement | GaTi P90 Tail Error |
@@ -798,7 +685,8 @@ To prove that downstream network intelligence truly matters, all 164,564 test tr
 | **Medium (15–30 min delay ahead)** | 24,408 | 14.8% | 9.713 min | **7.248 min** | **+2.47 min (25.4% better)** | 15.81 min |
 | **High ($\ge$ 30 min delay ahead)** | 30,468 | 18.5% | 11.164 min | **8.534 min** | **+2.63 min (23.6% better)** | 18.84 min |
 
-> **Operational Significance**: When a major junction collapses with $\ge 30$ minutes of delay, NTES predictions fail completely with an average error of **11.16 minutes**. GaTi detects the downstream bottleneck in advance, holding the error to **8.53 minutes**—saving dispatchers over **2.6 minutes of unexpected error per section**.
+> [!IMPORTANT]
+> **Operational Impact**: When a major junction collapses with $\ge 30$ minutes of delay, NTES predictions fail completely with an average error of **11.16 minutes**. GaTi detects the downstream bottleneck in advance, holding the error to **8.53 minutes**—saving dispatchers over **2.6 minutes of unexpected error per section**.
 
 ---
 
@@ -921,37 +809,21 @@ GaTi supports two operational modes through a clean polymorphic interface (`Trai
                             (Speed, Progress, Delay, Freshness)
 ```
 
-```
-  Inbound Telemetry Query
-         │
-         ▼
-  ┌──────────────────────────────────────┐
-  │  Token Bucket: 30 requests / minute  │
-  └──────────┬──────────────────────┬────┘
-    EXCEEDED  │                      │  ALLOWED
-             ▼                      ▼
-  ┌────────────────────┐   ┌─────────────────────────────────┐
-  │ Serve cached value │   │  In cache and age < 60s?        │
-  │ (60s TTL fallback) │   └──────────┬──────────────────────┘
-  └────────────────────┘     HIT ◀────┘                │ MISS
-                             │                          ▼
-                             │              ┌────────────────────────┐
-                             │              │ RailRadar REST API call │
-                             │              │ /trains/{id}/live       │
-                             │              └────────────┬───────────┘
-                             │              HTTP 200 OK  │    Error (401/403/429/5xx/timeout)
-                             │                    ▼      │           ▼
-                             │        ┌───────────────┐  │  ┌─────────────────────────────┐
-                             │        │ Parse envelope│  │  │ Graceful Degraded Mode       │
-                             │        │ Update cache  │  │  │ Physics-Based Standby        │
-                             │        └───────┬───────┘  │  │ Watermark: is_actual=False   │
-                             │                │           │  │ Display: Simulation Standby  │
-                             │                │           │  └────────────────┬────────────┘
-                             └────────────────┴───────────┴───────────────────┘
-                                                          │
-                                                          ▼
-                                            CanonicalTrainState returned
-                                            (FRESH / cached / sim-standby)
+```text
+  INBOUND TELEMETRY QUERY FLOW
+  ------------------------------------------------------------------------
+  Inbound Query
+       |
+       v
+  [Token Bucket: 30 req/min]
+       |-- EXCEEDED --> Serve cached value (60s TTL fallback)
+       |
+       +-- ALLOWED ---> Check in-memory cache (age < 60s)?
+                            |-- HIT  --> Return cached state
+                            |
+                            +-- MISS --> Call RailRadar REST API
+                                           |-- 200 OK --> Cache & Return
+                                           +-- Error  --> Standby Fallback
 ```
 
 * **Mode 1 (Historical Replay)**: Perfect for rigorous verification, hackathon jury demonstrations, and auditing against verified historical arrivals.
@@ -974,7 +846,8 @@ To prove that GaTi can run Indian Railways at national scale, concurrency stress
 National Fleet Math:
 13,000 Trains across India ÷ 508 Journeys/Second = 25.59 Seconds
 ```
-> **Conclusion**: A single standard CPU core can recalculate ETAs for every active train in India every 30 seconds.
+> [!NOTE]
+> **National Fleet Math**: A single standard CPU core can recalculate ETAs for every active train in India every 30 seconds.
 
 ---
 
@@ -1031,7 +904,10 @@ The entire codebase is verified through **76 automated pytest tests** covering u
 pytest tests/ -v
 ```
 
-```
+<details>
+<summary><strong>View Detailed Pytest Output (76 Tests Passed, 100% Success)</strong></summary>
+
+```text
 ============================= test session starts =============================
 platform win32 -- Python 3.13.5, pytest-7.4.0, pluggy-1.6.0
 rootdir: D:\ETA
@@ -1051,6 +927,7 @@ tests/test_throughput.py ....                                            [100%]
 
 ============================= 76 passed in 25.53s =============================
 ```
+</details>
 
 ---
 
@@ -1096,45 +973,45 @@ Access the dashboard at **`http://localhost:8000/`**.
 
 ## 📁 Project Structure & Technical Stack
 
-```
+```text
 d:\ETA\
-├── README.md                              ← Master documentation (You are here)
-├── Dockerfile                             ← Production container definition
-├── docker-compose.yml                     ← 1-command container orchestration
-├── requirements.txt                       ← Pinned production dependencies
-│
-├── data/
-│   ├── cleaned/                           ← Cleaned station coordinates & validated network edges
-│   └── processed/
-│       ├── section_runs_weather.parquet   ← 1,224,840 records with all 34 features
-│       └── station_network_grid.npz       ← 2D dense spatial-temporal network grid (13.6 MB)
-│
-├── models/
-│   ├── lightgbm_eta.txt                   ← Production Model Tier M3 (34 features, 5.7 MB)
-│   ├── ablation_ladder.json               ← M0–M3 ablation benchmark metrics
-│   ├── network_pressure_evaluation.json   ← Congestion stress benchmark metrics
-│   └── evaluation_summary.json            ← Official benchmark scorecard
-│
-├── src/
-│   ├── engine/
-│   │   ├── network_state.py               ← DownstreamNetworkStateEngine (2D memory grid)
-│   │   ├── rule_engine.py                 ← 4-stage G&SR / WTT deterministic constraint pipeline
-│   │   ├── state_correction.py            ← 4-state kinematic speed & unexpected stop classifier
-│   │   ├── eta_calculator.py              ← Vectorized NumPy forward trajectory accumulator
-│   │   └── prediction_logger.py           ← Autonomous evaluation loop with durable JSONL logging
-│   ├── integrations/
-│   │   ├── base.py                        ← CanonicalTrainState & Provider ABC
-│   │   ├── replay_provider.py             ← Adapter for 164,564 holdout historical test records
-│   │   └── railradar.py                   ← Live telemetry client (token bucket, TTL cache, fallback)
-│   └── api/
-│       └── main.py                        ← FastAPI server (21 REST endpoints)
-│
-├── frontend/                              ← Vanilla HTML5/CSS/JS + Leaflet.js operations dashboard
-│   ├── index.html
-│   ├── index.css
-│   └── app.js
-│
-└── tests/                                 ← 10 test suites (76 automated tests, 100% pass)
+|-- README.md                         <- Master documentation
+|-- Dockerfile                        <- Production container definition
+|-- docker-compose.yml                <- 1-command container orchestration
+|-- requirements.txt                  <- Pinned production dependencies
+|
+|-- data/
+|   |-- cleaned/                      <- Cleaned station coordinates & edges
+|   +-- processed/
+|       |-- section_runs_weather.parquet <- 1.22M records with 34 feats
+|       +-- station_network_grid.npz  <- 2D spatial-temporal grid (13.6 MB)
+|
+|-- models/
+|   |-- lightgbm_eta.txt              <- Production Model Tier M3 (5.7 MB)
+|   |-- ablation_ladder.json          <- M0-M3 ablation benchmark metrics
+|   |-- network_pressure_evaluation.json <- Congestion stress metrics
+|   +-- evaluation_summary.json       <- Official benchmark scorecard
+|
+|-- src/
+|   |-- engine/
+|   |   |-- network_state.py          <- 2D dense spatial-temporal memory grid
+|   |   |-- rule_engine.py            <- 4-stage deterministic G&SR pipeline
+|   |   |-- state_correction.py       <- 4-state kinematic speed classifier
+|   |   |-- eta_calculator.py         <- Vectorized trajectory accumulator
+|   |   +-- prediction_logger.py      <- Autonomous evaluation JSONL logger
+|   |-- integrations/
+|   |   |-- base.py                   <- CanonicalTrainState & Provider ABC
+|   |   |-- replay_provider.py        <- 164,564 holdout historical adapter
+|   |   +-- railradar.py              <- Live telemetry client & TTL cache
+|   +-- api/
+|       +-- main.py                   <- FastAPI server (21 REST endpoints)
+|
+|-- frontend/                         <- Vanilla HTML5/CSS/JS + Leaflet dashboard
+|   |-- index.html
+|   |-- index.css
+|   +-- app.js
+|
++-- tests/                            <- 10 test suites (76 tests, 100% pass)
 ```
 
 ### Technical Stack
