@@ -1,0 +1,8 @@
+{
+  "name": "gati-dashboard",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "build": "mkdir -p dist && cp index.html app.js index.css favicon.ico favicon.png Logo.png Logo-white.png Logo-original.png logo-emblem-transparent.png logo-emblem.png logo-full.png logo-transparent.png logo-trimmed.png dist/"
+  }
+}

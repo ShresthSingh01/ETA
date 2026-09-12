@@ -5,10 +5,12 @@ main.py - FastAPI Application Serving Dynamic ETA Engine, Replay API, and Minima
 from pathlib import Path
 import json
 import os
+import logging
 from typing import Optional, Dict, Any, List
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 try:
@@ -21,6 +23,10 @@ from datetime import datetime, timezone
 from src.replay.simulator import ReplaySimulator, DEMO_TRAINS_CONFIG
 from src.engine.rule_engine import OperationalEvent
 from src.engine.prediction_logger import LivePredictionLogger, PredictionRecord
+
+logger = logging.getLogger("gati.api")
+if not logger.handlers:
+    logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 
 
 app = FastAPI(
@@ -39,7 +45,18 @@ app.add_middleware(
 
 # Global simulator & live prediction evaluation logger
 simulator = ReplaySimulator()
-prediction_logger = LivePredictionLogger(log_file_path="logs/prediction_eval_log.jsonl")
+
+
+def _resolve_prediction_log_path() -> str:
+    env_path = os.getenv("PREDICTION_LOG_PATH")
+    if env_path:
+        return env_path
+    if os.getenv("VERCEL"):
+        return "/tmp/gati_prediction_eval_log.jsonl"
+    return "logs/prediction_eval_log.jsonl"
+
+
+prediction_logger = LivePredictionLogger(log_file_path=_resolve_prediction_log_path())
 
 
 def _log_downstream_predictions(state: Dict[str, Any]):
@@ -81,10 +98,16 @@ def _bootstrap_genuine_evaluations():
         prediction_logger.seed_from_genuine_evaluations(genuine_records)
         _log_downstream_predictions(st)
     except Exception as e:
-        print(f"Notice: Bootstrap evaluation seeding: {e}")
+        logger.warning("Bootstrap evaluation seeding failed: %s", e)
 
 
 _bootstrap_genuine_evaluations()
+
+
+@app.exception_handler(Exception)
+async def unhandled_exception_handler(_, exc: Exception):
+    logger.exception("Unhandled API exception: %s", exc)
+    return JSONResponse(status_code=500, content={"detail": "Internal server error"})
 
 
 class StepRequest(BaseModel):
@@ -350,6 +373,17 @@ def switch_mode(req: ModeSwitchRequest):
 def get_live_health():
     """Returns active telemetry provider connectivity, latency, rate limits, and freshness."""
     return simulator.get_provider_health()
+
+
+@app.get("/api/health")
+def get_health():
+    """Returns service health for platform probes."""
+    return {
+        "status": "ok",
+        "service": "gati-api",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "mode": simulator.mode
+    }
 
 
 @app.get("/api/live/provider/status")

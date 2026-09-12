@@ -1,0 +1,14 @@
+.git
+.github
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+venv/
+logs/
+tests/
+docs/
+scripts/
+Indian-Railway-Network-and-Delays/
+Dockerfile
+docker-compose.yml

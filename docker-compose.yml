@@ -10,10 +10,15 @@ services:
       - "8000:8000"
     environment:
       - PYTHONUNBUFFERED=1
+      - APP_ENV=development
       - RAILRADAR_API_KEY=${RAILRADAR_API_KEY:-}
       - RAILRADAR_BASE_URL=${RAILRADAR_BASE_URL:-https://api.railradar.in/v1}
+      - PREDICTION_LOG_PATH=${PREDICTION_LOG_PATH:-logs/prediction_eval_log.jsonl}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     volumes:
       - ./logs:/app/logs
+      - ./models:/app/models:ro
+      - ./data:/app/data:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]

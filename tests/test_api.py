@@ -124,3 +124,12 @@ def test_get_provider_status(client):
     assert "provider_name" in data
     assert "is_fallback_active" in data
     assert "telemetry_metrics" in data
+
+
+def test_health_endpoint(client):
+    res = client.get("/api/health")
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "ok"
+    assert data["service"] == "gati-api"
+    assert "timestamp" in data
